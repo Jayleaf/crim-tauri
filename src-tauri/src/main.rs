@@ -89,6 +89,7 @@ async fn login_def(username: &str, password: &str) -> String
         if res.as_ref().unwrap().status().is_success()
         {
             println!("{:?}", res.unwrap().text().await.unwrap());
+            
             "Logged in.".to_string()
         }
         else
@@ -99,6 +100,7 @@ async fn login_def(username: &str, password: &str) -> String
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![register])
         .invoke_handler(tauri::generate_handler![login])
         .run(tauri::generate_context!())

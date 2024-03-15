@@ -10,6 +10,12 @@ function App() {
   const [warnUsername, setWarnUsername] = createSignal("");
   const [warnPassword, setWarnPassword] = createSignal("");
 
+  async function transport()
+  {
+    // go to messenger page
+    window.location.href = "messenger.html";
+  }
+
   async function login()
   {
     if(username() === "" || password() === "")
@@ -125,6 +131,11 @@ function App() {
         >Register
         </button>
       </div>
+      <div>
+      <button onClick={transport()}>
+        test move to messenger
+      </button>
+    </div>
     </div>
   );
 }

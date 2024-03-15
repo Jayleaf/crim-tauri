@@ -18,4 +18,17 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
+  build:
+  {
+    // 4. tauri expects the output to be in `dist` and not `build`
+    outDir: "dist",
+    rollupOptions:
+    {
+      input:
+      {
+        index: "index.html",
+        messenger: "messenger.html",
+      }
+    }
+  }
 }));
