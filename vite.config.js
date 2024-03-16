@@ -27,7 +27,7 @@ export default defineConfig(async () => ({
       input:
       {
         index: "index.html",
-        messenger: "messenger.html",
+        messenger: "src/messenger.html",
       }
     }
   }

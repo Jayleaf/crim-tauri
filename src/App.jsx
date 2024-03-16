@@ -1,7 +1,11 @@
 import { createSignal } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
+import { WebviewWindow } from '@tauri-apps/api/window'
 import "./App.css";
-import toast from 'solid-toast';
+import toast, { Toaster } from 'solid-toast';
+import { Store } from "tauri-plugin-store-api";
+
+const store = new Store(".data.tmp");
 
 function App() {
   const [password, setPassword] = createSignal("");
@@ -13,7 +17,7 @@ function App() {
   async function transport()
   {
     // go to messenger page
-    window.location.href = "messenger.html";
+    window.eval("window.location.replace('src/messenger.html')");
   }
 
   async function login()
@@ -32,13 +36,23 @@ function App() {
       }
       return;
     }
-    let result = await invoke("login", { username: username(), password: password() })
-    toast.promise(result, {
-      loading: 'Loading',
-      success: <b>Got the data</b>,
-      error: 'An error occurred 😔',
-    });
-    setLoading(false);
+    const loadingToast = toast.loading("Logging in...")
+    let data = await invoke("login", { username: username(), password: password() })
+    switch (data)
+    {
+      case 200:
+        toast.success(`Successfully logged in as ${username()}! 🎉`, {id: loadingToast})
+        setLoading(false);
+        return;
+      case 401:
+        toast.error("Invalid username or password.", {id: loadingToast})
+        setLoading(false);
+        return;
+      case 500:
+        toast.error("Server error.", {id: loadingToast})
+        setLoading(false);
+        return;
+    }
   }
 
 
@@ -69,6 +83,17 @@ function App() {
 
   return (
     <div class="flex flex-col text-center items-center w-screen text-l pt-24 sm:text-base">
+      <Toaster
+       toastOptions={{
+          duration: 5000,
+          position: 'top-right',
+          style: {
+            backgroundColor: '#f8f9fa',
+            color: '#000000',
+          },
+        }}
+        
+      />
       <h1 class="text-4xl font-sans font-bold text-stone-300">Welcome to CRIM.</h1>
       <h2 class="text-xl font-sans font-bold text-stone-400">Please log in or sign up to access your messages.</h2>
 
@@ -132,8 +157,8 @@ function App() {
         </button>
       </div>
       <div>
-      <button onClick={transport()}>
-        test move to messenger
+      <button onClick={() => transport()}>
+        test move to messenger!
       </button>
     </div>
     </div>
