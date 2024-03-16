@@ -1,9 +1,9 @@
 import { createSignal } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
-import { WebviewWindow } from '@tauri-apps/api/window'
 import "./App.css";
 import toast, { Toaster } from 'solid-toast';
 import { Store } from "tauri-plugin-store-api";
+import NavBar from "./components/NavBar";
 
 const store = new Store(".data.tmp");
 
@@ -14,23 +14,18 @@ function App() {
   const [warnUsername, setWarnUsername] = createSignal("");
   const [warnPassword, setWarnPassword] = createSignal("");
 
-  async function transport()
-  {
+  async function transport() {
     // go to messenger page
     window.eval("window.location.replace('src/messenger.html')");
   }
 
-  async function login()
-  {
-    if(username() === "" || password() === "")
-    {
-      if(username() === "")
-      {
+  async function login() {
+    if (username() === "" || password() === "") {
+      if (username() === "") {
         setWarnUsername("Please enter your username.");
         setLoading(false);
       }
-      if(password() === "")
-      {
+      if (password() === "") {
         setWarnPassword("Please enter your password.");
         setLoading(false);
       }
@@ -38,89 +33,87 @@ function App() {
     }
     const loadingToast = toast.loading("Logging in...")
     let data = await invoke("login", { username: username(), password: password() })
-    switch (data)
-    {
+    switch (data) {
       case 200:
-        toast.success(`Successfully logged in as ${username()}! 🎉`, {id: loadingToast})
+        toast.success(`Successfully logged in as ${username()}! 🎉`, { id: loadingToast })
         setLoading(false);
         return;
       case 401:
-        toast.error("Invalid username or password.", {id: loadingToast})
+        toast.error("Invalid username or password.", { id: loadingToast })
         setLoading(false);
         return;
       case 500:
-        toast.error("Server error.", {id: loadingToast})
+        toast.error("Server error.", { id: loadingToast })
         setLoading(false);
         return;
     }
   }
 
 
-  async function register()
-  {
+  async function register() {
     setLoading(true);
-    if(username() === "" || password() === "")
-    {
-      if(username() === "")
-      {
+    if (username() === "" || password() === "") {
+      if (username() === "") {
         setWarnUsername("Please enter your username.");
         setLoading(false);
       }
-      if(password() === "")
-      {
+      if (password() === "") {
         setWarnPassword("Please enter your password.");
         setLoading(false);
       }
       return;
     }
     let result = await invoke("register", { username: username(), password: password() })
-    if(result === "Registered.")
-    {
+    if (result === "Registered.") {
       setLoading(false);
       return;
     }
   }
 
   return (
-    <div class="flex flex-col text-center items-center w-screen text-l pt-24 sm:text-base">
-      <Toaster
-       toastOptions={{
-          duration: 5000,
-          position: 'top-right',
-          style: {
-            backgroundColor: '#f8f9fa',
-            color: '#000000',
-          },
-        }}
-        
-      />
-      <h1 class="text-4xl font-sans font-bold text-stone-300">Welcome to CRIM.</h1>
-      <h2 class="text-xl font-sans font-bold text-stone-400">Please log in or sign up to access your messages.</h2>
+    <div class="flex flex-col w-screen h-screen">
+      <NavBar />
+      <div class="flex flex-col text-center items-center w-screen text-l pt-24 sm:text-base">
+        <Toaster
+          toastOptions={{
+            duration: 2000,
+            position: "top-center",
+            style: {
+              background: 'rgb(0, 0, 0, 0.5)',
+              color: '#FFFFFF',
+              top: 20,
+            },
 
-      <form
-        class="flex flex-col items-center pt-24 w-full h-80 select-none gap-y-4 "
-      >
-        <input
-          id="username-input"
-          class={warnUsername()? "animate-pulse outline-none font-sans w-96 h-20 p-2 border-rose-500 border-2 text-xl border-opacity-50 rounded-md bg-opacity-10 bg-stone-300" : "outline-none font-sans w-96 h-20 p-2 border-2 text-xl border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
-          onChange={(e) => {setUsername(e.currentTarget.value)}}
-          onInput={() => setWarnUsername(false)}
-          disabled={loading()}
-          placeholder={warnUsername()? warnUsername() : "Enter your username..."}
+          }}
+
         />
-        <input
-          id="pwd-input"
-          class={warnPassword()? "animate-pulse outline-none font-sans w-96 h-20 p-2 border-rose-500 border-2 text-xl border-opacity-50 rounded-md bg-opacity-10 bg-stone-300" : "outline-none font-sans w-96 h-20 p-2 border-2 text-xl border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
-          onChange={(e) => {setPassword(e.currentTarget.value)}}
-          onInput={() => setWarnPassword(false)}
-          disabled={loading()}
-          type="password"
-          placeholder={warnPassword()? warnPassword() : "Enter your password..."}
-        />
-      </form>
-      <div class="flex flex-row items-center justify-center w-full pt-0 gap-x-10">
-        <button 
-        class="
+        <h1 class="text-4xl font-sans font-bold text-stone-300">Welcome to CRIM.</h1>
+        <h2 class="text-xl font-sans font-bold text-stone-400">Please log in or sign up to access your messages.</h2>
+
+        <form
+          class="flex flex-col items-center pt-24 w-full h-80 select-none gap-y-4 "
+        >
+          <input
+            id="username-input"
+            class={warnUsername() ? "animate-pulse outline-none font-sans w-96 h-20 p-2 border-rose-500 border-2 text-xl border-opacity-50 rounded-md bg-opacity-10 bg-stone-300" : "outline-none font-sans w-96 h-20 p-2 border-2 text-xl border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
+            onChange={(e) => { setUsername(e.currentTarget.value) }}
+            onInput={() => setWarnUsername(false)}
+            disabled={loading()}
+            placeholder={warnUsername() ? warnUsername() : "Enter your username..."}
+          />
+          <input
+            id="pwd-input"
+            class={warnPassword() ? "animate-pulse outline-none font-sans w-96 h-20 p-2 border-rose-500 border-2 text-xl border-opacity-50 rounded-md bg-opacity-10 bg-stone-300" : "outline-none font-sans w-96 h-20 p-2 border-2 text-xl border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
+            onChange={(e) => { setPassword(e.currentTarget.value) }}
+            onInput={() => setWarnPassword(false)}
+            disabled={loading()}
+            type="password"
+            placeholder={warnPassword() ? warnPassword() : "Enter your password..."}
+          />
+        </form>
+        <div class="flex flex-row items-center justify-center w-full pt-0 gap-x-10">
+          <button
+            class="
           outline-none
           font-sans 
           w-40 
@@ -132,13 +125,13 @@ function App() {
           bg-stone-300 
           text-stone-400 
           transition ease-in-out duration-200
-          hover:scale-105" 
-        type="submit"
-        onClick={() => login()}
-        >Login
-        </button>
-        <button 
-        class="
+          hover:scale-105"
+            type="submit"
+            onClick={() => login()}
+          >Login
+          </button>
+          <button
+            class="
           outline-none
           font-sans 
           w-40 
@@ -150,17 +143,18 @@ function App() {
           bg-stone-300 
           text-stone-400 
           transition ease-in-out duration-200
-          hover:scale-105" 
-        type="submit"
-        onClick={() => register()}
-        >Register
-        </button>
+          hover:scale-105"
+            type="submit"
+            onClick={() => register()}
+          >Register
+          </button>
+        </div>
+        <div>
+          <button onClick={() => transport()}>
+            test move to messenger!
+          </button>
+        </div>
       </div>
-      <div>
-      <button onClick={() => transport()}>
-        test move to messenger!
-      </button>
-    </div>
     </div>
   );
 }
