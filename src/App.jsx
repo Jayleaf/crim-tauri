@@ -16,7 +16,8 @@ function App() {
 
   async function transport() {
     // go to messenger page
-    window.eval("window.location.replace('src/messenger.html')");
+    console.log("transporting to messenger...")
+    window.eval("window.location.replace('messenger.html')");
   }
 
   async function login() {
@@ -32,17 +33,18 @@ function App() {
       return;
     }
     const loadingToast = toast.loading("Logging in...")
-    let data = await invoke("login", { username: username(), password: password() })
+    let data = await invoke("login_f", { username: username(), password: password() })
     switch (data) {
       case 200:
         toast.success(`Successfully logged in as ${username()}! 🎉`, { id: loadingToast })
         setLoading(false);
+        transport();
         return;
       case 401:
         toast.error("Invalid username or password.", { id: loadingToast })
         setLoading(false);
         return;
-      case 500:
+      case 500 || 400:
         toast.error("Server error.", { id: loadingToast })
         setLoading(false);
         return;
@@ -63,9 +65,9 @@ function App() {
       }
       return;
     }
-    let result = await invoke("register", { username: username(), password: password() })
+    let result = await invoke("register_f", { username: username(), password: password() })
     if (result === "Registered.") {
-      setLoading(false);
+      toast.success("Successfully registered! 🎉")
       return;
     }
   }
@@ -147,11 +149,6 @@ function App() {
             type="submit"
             onClick={() => register()}
           >Register
-          </button>
-        </div>
-        <div>
-          <button onClick={() => transport()}>
-            test move to messenger!
           </button>
         </div>
       </div>
