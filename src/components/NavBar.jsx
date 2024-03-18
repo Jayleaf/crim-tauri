@@ -1,7 +1,7 @@
 import { appWindow } from '@tauri-apps/api/window'
 export default () =>
 <div data-tauri-drag-region class="flex flex-row w-full h-6 bg-red-950 bg-opacity-20">
-        <div class="h-6 pl-4 pt-1">
+        <div class="h-6 pl-4">
           <p class="text-xs font-sans font-thin text-stone-400 text-opacity-50">CRIM v0.1 indev</p>
         </div>
         <div class="ml-auto">

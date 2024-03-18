@@ -1,11 +1,13 @@
-import { createSignal, onMount } from "solid-js";
+import { For, createSignal, onMount } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
-import toast from 'solid-toast';
+import { toast, Toaster } from 'solid-toast';
 import NavBar from "./components/NavBar";
+import Conversation from "./components/Conversation";
+import Message from "./components/Message";
 import ConversationButtonSidebar from "./components/ConversationButtonSidebar";
 import Fa from 'solid-fa'
-import { faArrowRightFromBracket, faBell, faFlag, faGear, faGears } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRightFromBracket, faBell, faGear, faThumbtack } from '@fortawesome/free-solid-svg-icons'
 import { Store } from "tauri-plugin-store-api";
 
 function Messenger() {
@@ -14,12 +16,11 @@ function Messenger() {
   const [conversations, setConversations] = createSignal([{}]);
   const [query, setQuery] = createSignal("");
   const [warnQuery, setWarnQuery] = createSignal("");
+  const [activeConversation, setActiveConversation] = createSignal(""); // this is a conversation ID
   const store = new Store(".data.tmp");
-  onMount(async () => 
-  {
+  onMount(async () => {
     // load up the user data
     let sid = await store.get("sid");
-    console.log(await store.entries())
     if (sid === null) {
       window.eval("window.location.replace('index.html')");
       toast.error("Invalid session.")
@@ -27,9 +28,9 @@ function Messenger() {
     let res = await invoke("get_f", { sid: sid });
     switch (res) {
       case 200:
-        setUsername(await store.get("username"));
-        setFriends(await store.get("friends"));
-        setConversations(await store.get("conversations"));
+        setUsername(JSON.parse(await store.get("userdata")).username);
+        setFriends(JSON.parse(await store.get("userdata")).friends);
+        setConversations(JSON.parse(await store.get("userdata")).conversations);
         break;
       case 401:
         toast.error("Invalid session.")
@@ -41,34 +42,32 @@ function Messenger() {
     }
   })
 
-  async function logout()
-  {
+  async function logout() {
     await store.clear();
     window.eval("window.location.replace('index.html')");
   }
 
-  async function addFriend(e)
-  {
+  async function addFriend(e) {
     e.preventDefault();
-    if (query() === "")
-    {
+    if (query() === "") {
       setWarnQuery("Please enter a name.")
       return;
     }
-    let res = await invoke("addfriend_f", { username: query() });
+    let res = await invoke("add_friend_f", { target: query() });
     switch (res) {
       case 200:
         toast.success(`Successfully added ${query()} as a friend! 🎉`)
-        setFriends(await store.get("friends"));
+        setFriends(JSON.parse(JSON.stringify(await store.get("userdata"))).friends);
+        console.log(await store.get("userdata"))
         break;
       case 401:
-        toast.error("Invalid session.")
-        window.eval("window.location.replace('index.html')");
+        toast.error("Invalid session. Try relogging.")
         break;
       case 404:
         toast.error("User not found.")
         break;
       case 403:
+        // yet to be implemented
         toast.error("User has blocked you.")
         break;
       case 400:
@@ -85,30 +84,43 @@ function Messenger() {
     <div>
       <div class="flex flex-col h-[100vh] overflow-hidden">
         <NavBar />
+        <Toaster
+          toastOptions={{
+            duration: 2000,
+            position: "top-center",
+            style: {
+              background: 'rgb(0, 0, 0, 0.5)',
+              color: '#FFFFFF',
+              top: 20,
+            },
+
+          }}
+
+        />
         <div class="flex flex-row h-[100vh]">
-          <div class="w-[200px] max-w-[200px] min-w-[200px] bg-black bg-opacity-30 h-full">
+          <div class="w-[200px] max-w-[200px] min-w-[200px] bg-black bg-opacity-40 h-full">
             <div class="flex flex-col h-full">
-              <div class="align-middle text-center justify-center pt-2 h-[50x]">
+              <div class="align-middle text-center justify-center pt-4 h-[50x]">
                 <h1 class="text-4xl font-sans font-bold text-stone-300">CRIM</h1>
               </div>
 
-              <div class="pt-2">
+              <div class="pt-4">
                 <hr class="border-double border-2 border-white border-opacity-5"></hr>
               </div>
               <form class="flex flex-col items-center justify-center w-full h-8 select-none pt-5 pb-5" onSubmit={(e) => addFriend(e)}>
-              <input
-                id="friend-query"
-                class={warnQuery() != "" ? "animate-pulse outline-none font-sans w-5/6 h-4 p-3 border-2 text-xs border-rose-500 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400" : "outline-none font-sans w-5/6 h-4 p-3 border-2 text-xs border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
-                onChange={(e) => { setQuery(e.currentTarget.value) }}
-                onInput={() => setWarnQuery("")}
-                placeholder={warnQuery() != "" ? warnQuery() : "Add a friend..."}
+                <input
+                  id="friend-query"
+                  class={warnQuery() != "" ? "animate-pulse outline-none font-sans w-5/6 h-4 p-3 border-2 text-xs border-rose-500 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400" : "outline-none font-sans w-5/6 h-4 p-3 border-2 text-xs border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
+                  onChange={(e) => { setQuery(e.currentTarget.value) }}
+                  onInput={() => setWarnQuery("")}
+                  placeholder={warnQuery() != "" ? warnQuery() : "Add a friend..."}
                 />
               </form>
               <div class="">
                 <hr class="border-double border-2 border-white border-opacity-5"></hr>
               </div>
               <div class="pl-3 flex items-center w-full h-[780px] max-h-[780px] min-h-[370px] object-center justify-center">
-                <ul class="pt-5 w-full h-full text-center items-center overflow-hidden scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent overflow-y-scroll pr-3">
+                <ul class="pt-5 w-full h-full text-center items-center scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent overflow-y-scroll pr-3">
 
                   <For each={friends()}>{(friend) => (
                     <ConversationButtonSidebar name={friend} />
@@ -130,7 +142,7 @@ function Messenger() {
                   </div>
                   <div class="flex flex-row pt-4">
                     <img img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg" class="w-6 h-6"></img>
-                    <h1 class="w-28 truncate pl-2 pt-1 text-xs font-sans text-stone-300">{username()}</h1>
+                    <h1 class="w-28 truncate pl-2 text-xs font-sans text-stone-300">{username()}</h1>
                   </div>
                 </div>
               </div>
@@ -138,8 +150,8 @@ function Messenger() {
           </div>
 
           <div class="w-full bg-black bg-opacity-20 h-full">
-            <div class="bg-slate-500">
-              chat
+            <div class="block">
+              <Conversation />
             </div>
           </div>
         </div>
