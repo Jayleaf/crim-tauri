@@ -28,15 +28,14 @@ pub async fn get(session_id: &str, app_handle: tauri::AppHandle) -> u16
     let status = res.as_ref().unwrap().status();
     if status.is_success()
     {
-        let result: GetResult = res.unwrap().json().await.unwrap();
+        let mut result: ClientAccount = res.unwrap().json().await.unwrap();
+        result.session_id = session_id.to_string();
         let stores = app_handle.state::<StoreCollection<Wry>>();
         let path = PathBuf::from(".data.tmp");
         with_store(app_handle.clone(), stores, path, |store| 
         {
             // this is a little 𝓯𝓻𝓮𝓪𝓴𝔂 😜 
-            store.insert("username".to_string(), serde_json::Value::String(result.username)).expect("Failed to write username to store.");
-            store.insert("friends".to_string(), serde_json::Value::Array(result.friends.into_iter().map(|x| serde_json::Value::String(x)).collect())).expect("Failed to write friends to store.");
-            store.insert("convos".to_string(), serde_json::Value::Array(result.convos.into_iter().map(|x| serde_json::to_value(x).unwrap()).collect()))
+            store.insert("userdata".to_string(), serde_json::Value::String(serde_json::to_string(&result).unwrap()))
         }).expect("failed to write");
     }
     return status.as_u16();

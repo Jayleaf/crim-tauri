@@ -1,13 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct ClientAccount
 {
     pub username: String,
     pub password: String,
     pub friends: Vec<String>,
-    pub session_id: String,
+    /// This could get really thick if the conversations are too big. Will load test eventually.
+    pub conversations: Vec<Conversation>,
+    pub session_id: String
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
