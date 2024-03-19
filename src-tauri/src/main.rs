@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod generics;
 mod user;
+mod messaging;
 use std::path::PathBuf;
 use reqwest::{self, StatusCode};
 use tauri::{async_runtime::handle, Manager, Wry};
