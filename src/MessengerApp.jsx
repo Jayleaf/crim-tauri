@@ -1,58 +1,34 @@
-import { For, createSignal, onMount } from "solid-js";
+import { For, createEffect, createSignal } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import { toast, Toaster } from 'solid-toast';
 import NavBar from "./components/NavBar";
-import Conversation from "./components/Conversation";
 import Fa from 'solid-fa'
 import { faArrowRightFromBracket, faBell, faGear } from '@fortawesome/free-solid-svg-icons'
-import { Store } from "tauri-plugin-store-api";
-import { component } from 'undestructure-macros'
+import Conversation from "./components/Conversation";
 
-function Messenger() {
+
+function Messenger(props) {
   const [username, setUsername] = createSignal("");
   const [friends, setFriends] = createSignal([{}]);
   const [conversations, setConversations] = createSignal([{}]);
   const [query, setQuery] = createSignal("");
   const [warnQuery, setWarnQuery] = createSignal("");
   const [activeConversation, setActiveConversation] = createSignal({}); // this is a convo obj
-  const store = new Store(".data.tmp");
-  onMount(async () => {
+  
+  createEffect(() => {
     // load up the user data
-    let sid = await store.get("sid");
-    if (sid === null) {
-      window.eval("window.location.replace('index.html')");
-      toast.error("Invalid session.")
+    const data = typeof props.data == "string" ? JSON.parse(props.data) : props.data;
+    console.log(data)
+    if(data) {
+      setUsername(data.username);
+      setFriends(data.friends);
+      setConversations(data.conversations);
     }
-    let res = await invoke("get_f", { sid: sid });
-    switch (res) {
-      case 200:
-        setUsername(JSON.parse(await store.get("userdata")).username);
-        setFriends(JSON.parse(await store.get("userdata")).friends);
-        setConversations(JSON.parse(await store.get("userdata")).conversations);
-        break;
-      case 401:
-        toast.error("Invalid session.")
-        window.eval("window.location.replace('index.html')");
-        break;
-      case 500:
-        toast.error("Server error.")
-        break;
-    }
-    res = await invoke("recieve_messages_f");
-        switch (res)
-        {
-            case 200:
-                console.log("Messages retrieved successfully.")
-                break;
-            case 500:
-                console.error("Server error.")
-                break;
-        }
   })
 
   async function logout() {
-    await store.clear();
+    // invoke logout
     window.eval("window.location.replace('index.html')");
   }
 
@@ -66,8 +42,6 @@ function Messenger() {
     switch (res) {
       case 200:
         toast.success(`Successfully added ${query()} as a friend! 🎉`)
-        setFriends(JSON.parse(JSON.stringify(await store.get("userdata"))).friends);
-        console.log(await store.get("userdata"))
         break;
       case 401:
         toast.error("Invalid session. Try relogging.")
@@ -177,7 +151,8 @@ function Messenger() {
 
           <div class="w-full bg-black bg-opacity-20 h-full">
             <div class="block">
-              {component(<Conversation target={activeConversation()} users={activeConversation().users?.join(', ')}/>)}
+              
+              {activeConversation().id? <Conversation target={activeConversation()} users={activeConversation().users?.join(', ')}/> : "friend menu" }
             </div>
           </div>
         </div>

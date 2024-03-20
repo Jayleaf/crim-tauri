@@ -1,6 +1,7 @@
-use super::generics::{enums::FriendAction, structs::ClientAccount};
+use super::generics::{utils, enums::FriendAction, structs::ClientAccount};
 
 use std::path::PathBuf;
+use openssl::asn1::Asn1Object;
 use reqwest::{self, Client, StatusCode};
 use tauri::{Wry, Manager};
 use tauri_plugin_store::{with_store, StoreCollection};
@@ -25,9 +26,21 @@ pub async fn update_friend(target: &str, action: FriendAction, app_handle: tauri
     {
         with_store(app_handle.clone(), app_handle.state::<StoreCollection<Wry>>(), PathBuf::from(".data.tmp"), |store| 
         {
-            let data: &serde_json::Value = store.get("userdata")
-                .unwrap();
-            Ok(serde_json::from_str::<ClientAccount>(data.as_str().unwrap()).unwrap())
+                let data: &serde_json::Value = store.get("userdata")
+                    .unwrap();
+                println!("data: {:?}", data);
+                let deserialized: ClientAccount =
+                {
+                    if data.as_str().is_none()
+                    {
+                        serde_json::from_value(data.clone()).unwrap()
+                    }
+                    else
+                    {
+                        serde_json::from_str(data.as_str().unwrap()).unwrap()
+                    }
+                };
+            Ok(deserialized)
         }).unwrap()
     };
     println!("Account: {:?}", account);
@@ -69,5 +82,6 @@ pub async fn update_friend(target: &str, action: FriendAction, app_handle: tauri
         with_store(app_handle.clone(), stores, path, |store| store.insert("userdata".to_string(), json_data)).expect("failed to write");
         
     }
+    utils::update_store(app_handle.clone());
     status
 }

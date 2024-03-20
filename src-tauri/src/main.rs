@@ -42,17 +42,10 @@ async fn add_friend_f(target: &str, app_handle: tauri::AppHandle) -> Result<u16,
     Ok(res)
 }
 
-#[tauri::command]
-async fn recieve_messages_f(app_handle: tauri::AppHandle) -> Result<u16, ()>
-{
-    let res: u16 = messaging::recieve::recieve(app_handle).await;
-    Ok(res)
-}
-
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_friend_f, recieve_messages_f])
+        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_friend_f])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

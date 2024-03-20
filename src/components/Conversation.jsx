@@ -1,6 +1,6 @@
-import { For, createSignal, onMount } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 import Fa from 'solid-fa'
-import { faEnvelope, faMagnifyingGlass, faThumbtack } from '@fortawesome/free-solid-svg-icons'
+import { faEnvelope, faThumbtack } from '@fortawesome/free-solid-svg-icons'
 import Message from "./Message";
 import { Store } from "tauri-plugin-store-api";
 import { invoke } from "@tauri-apps/api/tauri";
@@ -12,40 +12,37 @@ export default function Conversation(props) {
     const [messages, setMessages] = createSignal([]);
     const [charcount, setCharcount] = createSignal(0);
     const [currentMsg, setCurrentMsg] = createSignal("");
-    onMount(async () => {
+
+
+    createEffect(() => {
+        console.log(props.target.id)
         // load the first 50 messages from the conversation
         console.log("loading messages...")
-        if(props.target === "") return;
-        let res = await invoke("recieve_messages_f");
-        switch (res)
-        {
-            case 200:
-                console.log("Messages retrieved successfully.")
-                break;
-            case 500:
-                console.error("Server error.")
-                break;
-        }
-        // find conversation by provided id
-        let conversation = JSON.parse(await store.get("userdata")).conversations.find((conv) => conv.id === props.target.id);
-        for(let i = 0; i < 50; i++) {
-            let decoder = new TextDecoder("utf-8");
-            if(conversation === undefined) break;
-            let message = conversation.messages[i];
-            if(message === undefined) break;
-            message.data = new Uint8Array(message.data);
-            console.log(message.data)
-            let text = JSON.parse(decoder.decode(message.data))
-            let date = text.time
-            console.log(text)
-            text = decoder.decode(new Uint8Array(text.message))
-            
-            console.log("Message: " + text)
-            // messages need to be added to the start of the list so they're rendered right.
-            setMessages([<Message text={text} username={message.sender} time={date}  />, ...messages()]);       
-        }
-        // get the username of the person we're sending a message to
-
+        if(props.target === "") {setMessages([]); return;}
+            // find conversation by provided id
+            store.get("userdata").then(data => {
+                data = JSON.parse(data);
+                let conversation = data.conversations.find((conv) => conv.id === props.target.id);
+                for(let i = 0; i < 50; i++) {
+                    let decoder = new TextDecoder("utf-8");
+                    console.log(conversation)
+                    if(conversation === undefined) {setMessages([]); break;}
+                    let message = conversation.messages[i];
+                    console.log(message)
+                    if(message === undefined) {break;}
+                    message.data = new Uint8Array(message.data);
+                    console.log(message.data)
+                    let text = JSON.parse(decoder.decode(message.data))
+                    let date = text.time
+                    console.log(text)
+                    text = decoder.decode(new Uint8Array(text.message))
+                    
+                    console.log("Message: " + text)
+                    // messages need to be added to the start of the list so they're rendered right.
+                    setMessages([<Message text={text} username={message.sender} time={date}  />, ...messages()]);       
+                }
+                // get the username of the person we're sending a message to
+        })
     })
 
 
