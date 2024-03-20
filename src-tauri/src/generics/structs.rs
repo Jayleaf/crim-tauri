@@ -24,14 +24,17 @@ pub struct Conversation
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct EncryptedMessage
 {
-    pub data: Vec<u8> // data contains a serialized message struct. see diagram in readme.md for more info.
+    pub data: Vec<u8>,
+    pub sender: String,
+    pub dest_convo_id: String,
+    pub sender_sid: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UserKey
 {
-    owner: String,
-    key: Vec<u8>
+    pub owner: String,
+    pub key: Vec<u8>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

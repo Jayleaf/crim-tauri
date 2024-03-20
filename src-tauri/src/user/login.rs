@@ -38,6 +38,7 @@ pub async fn login(username: &str, password: &str, app_handle: tauri::AppHandle)
         let session_id: &String = &data[0];
         let encrypted_private_key: &[u8] = &data[1].split(",").map(|s| s.parse::<u8>().unwrap()).collect::<Vec<u8>>();
         let private_key = Rsa::private_key_from_pem_passphrase(encrypted_private_key, password.as_bytes()).unwrap();
+        
         // store private key in pkey.key file
         let path = PathBuf::from(".pkey.key");
         let mut file = std::fs::File::create(path).unwrap();

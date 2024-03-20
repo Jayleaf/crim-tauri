@@ -5,13 +5,6 @@ use tauri::{async_runtime::handle, Manager, Wry};
 use tauri_plugin_store::{with_store, StoreCollection};
 
 /// This struct is also found in get.rs in the API.
-#[derive(serde::Serialize, serde::Deserialize)]
-struct GetResult
-{
-    username: String,
-    friends: Vec<String>,
-    convos: Vec<Conversation>
-}
 
 /// Gets user's data from the server. Requires a session id.
 pub async fn get(session_id: &str, app_handle: tauri::AppHandle) -> u16

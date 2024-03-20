@@ -1,9 +1,19 @@
 import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
+import solidPlugin from "vite-plugin-solid";
+// import the undestructure plugin (properly this time! )
+import { undestructurePlugin } from "babel-plugin-solid-undestructure"
 
-// https://vitejs.dev/config/
+
+// https://vitejs.dev/config/'
 export default defineConfig(async () => ({
-  plugins: [solid()],
+  plugins: [solidPlugin(
+   {
+    babel: {
+      plugins: [undestructurePlugin("vanilla-js")]
+    } 
+   }
+  )],
+      
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

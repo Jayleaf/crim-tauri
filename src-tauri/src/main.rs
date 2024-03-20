@@ -15,44 +15,44 @@ use crate::{generics::enums::FriendAction, user::{get::get, login::login, regist
 
 
 #[tauri::command]
-fn login_f(username: &str, password: &str, app_handle: tauri::AppHandle) -> u16
+async fn login_f(username: &str, password: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
 {
-    println!("ran!");
-    let rt: Runtime = tokio::runtime::Runtime::new().unwrap();
-    let res: StatusCode = rt.block_on(login(username, password, app_handle.clone()));
-    res.try_into().unwrap()
+    let res: StatusCode = login(username, password, app_handle.clone()).await;
+    Ok(res.as_u16())
 }
 
 #[tauri::command]
-fn register_f(username: &str, password: &str) -> String
+async fn register_f(username: &str, password: &str) -> Result<String, ()>
 {
-    let rt: Runtime = tokio::runtime::Runtime::new().unwrap();
-    let res: String = rt.block_on(register(username, password));
-    res
+    let res: String = register(username, password).await;
+    Ok(res)
 }
 
 #[tauri::command]
-fn get_f(sid: &str, app_handle: tauri::AppHandle) -> u16
+async fn get_f(sid: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
 {
-    println!("ran!");
-    let rt: Runtime = tokio::runtime::Runtime::new().unwrap();
-    let res: u16 = rt.block_on(get(sid, app_handle.clone()));
-    res
+    let res: u16 = get(sid, app_handle.clone()).await;
+    Ok(res)
 }
 
 #[tauri::command]
-fn add_friend_f(target: &str, app_handle: tauri::AppHandle) -> u16
+async fn add_friend_f(target: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
 {
-    println!("ran!");
-    let rt: Runtime = tokio::runtime::Runtime::new().unwrap();
-    let res: u16 = rt.block_on(update_friend(target, FriendAction::Add, app_handle.clone())).into();
-    res
+    let res: u16 = update_friend(target, FriendAction::Add, app_handle.clone()).await.as_u16();
+    Ok(res)
+}
+
+#[tauri::command]
+async fn recieve_messages_f(app_handle: tauri::AppHandle) -> Result<u16, ()>
+{
+    let res: u16 = messaging::recieve::recieve(app_handle).await;
+    Ok(res)
 }
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_friend_f])
+        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_friend_f, recieve_messages_f])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

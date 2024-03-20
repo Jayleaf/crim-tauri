@@ -4,11 +4,10 @@ import "./App.css";
 import { toast, Toaster } from 'solid-toast';
 import NavBar from "./components/NavBar";
 import Conversation from "./components/Conversation";
-import Message from "./components/Message";
-import ConversationButtonSidebar from "./components/ConversationButtonSidebar";
 import Fa from 'solid-fa'
-import { faArrowRightFromBracket, faBell, faGear, faThumbtack } from '@fortawesome/free-solid-svg-icons'
+import { faArrowRightFromBracket, faBell, faGear } from '@fortawesome/free-solid-svg-icons'
 import { Store } from "tauri-plugin-store-api";
+import { component } from 'undestructure-macros'
 
 function Messenger() {
   const [username, setUsername] = createSignal("");
@@ -16,7 +15,7 @@ function Messenger() {
   const [conversations, setConversations] = createSignal([{}]);
   const [query, setQuery] = createSignal("");
   const [warnQuery, setWarnQuery] = createSignal("");
-  const [activeConversation, setActiveConversation] = createSignal(""); // this is a conversation ID
+  const [activeConversation, setActiveConversation] = createSignal({}); // this is a convo obj
   const store = new Store(".data.tmp");
   onMount(async () => {
     // load up the user data
@@ -40,6 +39,16 @@ function Messenger() {
         toast.error("Server error.")
         break;
     }
+    res = await invoke("recieve_messages_f");
+        switch (res)
+        {
+            case 200:
+                console.log("Messages retrieved successfully.")
+                break;
+            case 500:
+                console.error("Server error.")
+                break;
+        }
   })
 
   async function logout() {
@@ -78,6 +87,17 @@ function Messenger() {
         break;
     }
   }
+
+  const [show, setShow] = createSignal(false);
+    async function click(name)
+    {
+        console.log(name)
+        // set active conversation in parent
+        if(name != activeConversation().id) setActiveConversation(conversations().find((conv) => conv.id === name));
+        else setActiveConversation({});
+        setShow(!show())
+        console.log(activeConversation())
+    }
 
 
   return (
@@ -122,8 +142,14 @@ function Messenger() {
               <div class="pl-3 flex items-center w-full h-[780px] max-h-[780px] min-h-[370px] object-center justify-center">
                 <ul class="pt-5 w-full h-full text-center items-center scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent overflow-y-scroll pr-3">
 
-                  <For each={friends()}>{(friend) => (
-                    <ConversationButtonSidebar name={friend} />
+                  <For each={conversations()}>{(convo) => (
+                    <li class="">
+                      <button onClick={() => click(convo.id)} class={`flex flex-row w-full items-center bg-black ${activeConversation() == convo.id ? "bg-opacity-40" : "bg-opacity-25"} rounded-md h-12 mt-2 mb-2 pr-5 ${activeConversation() == convo.id ? "hover:bg-opacity-40" : "hover:bg-opacity-15"}`}>
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg" class="w-6 h-6 ml-2" />
+                          <p class="truncate text-xs pl-2 font-sans text-stone-300 text-center align-middle justify-center w-fit">{convo.users?.join(", ") || ""}</p>
+                      </button>
+                    </li>
+
                   )}</For>
                 </ul>
               </div>
@@ -151,7 +177,7 @@ function Messenger() {
 
           <div class="w-full bg-black bg-opacity-20 h-full">
             <div class="block">
-              <Conversation />
+              {component(<Conversation target={activeConversation()} users={activeConversation().users?.join(', ')}/>)}
             </div>
           </div>
         </div>
