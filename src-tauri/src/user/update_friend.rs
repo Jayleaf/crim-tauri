@@ -22,27 +22,7 @@ use tauri_plugin_store::{with_store, StoreCollection};
 pub async fn update_friend(target: &str, action: FriendAction, app_handle: tauri::AppHandle) -> StatusCode 
 {
     // get the serialized ClientAccount from local storage
-    let mut account: ClientAccount = 
-    {
-        with_store(app_handle.clone(), app_handle.state::<StoreCollection<Wry>>(), PathBuf::from(".data.tmp"), |store| 
-        {
-                let data: &serde_json::Value = store.get("userdata")
-                    .unwrap();
-                println!("data: {:?}", data);
-                let deserialized: ClientAccount =
-                {
-                    if data.as_str().is_none()
-                    {
-                        serde_json::from_value(data.clone()).unwrap()
-                    }
-                    else
-                    {
-                        serde_json::from_str(data.as_str().unwrap()).unwrap()
-                    }
-                };
-            Ok(deserialized)
-        }).unwrap()
-    };
+    let mut account: ClientAccount = utils::get_client_account(app_handle.clone());
     println!("Account: {:?}", account);
     match action
     {

@@ -94,17 +94,17 @@ function Messenger(props) {
         <div class="flex flex-row h-[100vh]">
           <div class="w-[200px] max-w-[200px] min-w-[200px] bg-black bg-opacity-40 h-full">
             <div class="flex flex-col h-full">
-              <div class="align-middle text-center justify-center pt-4 h-[50x]">
+              <div class="align-middle text-center justify-center pt-5 h-[50x]">
                 <h1 class="text-4xl font-sans font-bold text-stone-300">CRIM</h1>
               </div>
 
-              <div class="pt-4">
-                <hr class="border-double border-2 border-white border-opacity-5"></hr>
+              <div class="pt-2">
+                <hr class="border-double border-2 border-white border-opacity-0"></hr>
               </div>
-              <form class="flex flex-col items-center justify-center w-full h-8 select-none pt-5 pb-5" onSubmit={(e) => addFriend(e)}>
+              <form class="flex flex-col items-center justify-center w-full h-8 select-none pt-5 pb-7" onSubmit={(e) => addFriend(e)}>
                 <input
                   id="friend-query"
-                  class={warnQuery() != "" ? "animate-pulse outline-none font-sans w-5/6 h-4 p-3 border-2 text-xs border-rose-500 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400" : "outline-none font-sans w-5/6 h-4 p-3 border-2 text-xs border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
+                  class={warnQuery() != "" ? "animate-pulse outline-none font-sans w-5/6 h-4 p-3 border-2 text-xs border-rose-500 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400" : "outline-none font-sans w-5/6 h-4 p-3 border-2 text-xs border-rose-950 border-opacity-0 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
                   onChange={(e) => { setQuery(e.currentTarget.value) }}
                   onInput={() => setWarnQuery("")}
                   placeholder={warnQuery() != "" ? warnQuery() : "Add a friend..."}
@@ -113,7 +113,7 @@ function Messenger(props) {
               <div class="">
                 <hr class="border-double border-2 border-white border-opacity-5"></hr>
               </div>
-              <div class="pl-3 flex items-center w-full h-[780px] max-h-[780px] min-h-[370px] object-center justify-center">
+              <div class="pl-3 flex items-center w-full h-[780px] max-h-[780px] min-h-[350px] object-center justify-center">
                 <ul class="pt-5 w-full h-full text-center items-center scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent overflow-y-scroll pr-3">
 
                   <For each={conversations()}>{(convo) => (

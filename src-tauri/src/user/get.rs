@@ -1,8 +1,8 @@
-use super::generics::structs::{ClientAccount, Conversation};
+use super::generics::{utils, structs::{ClientAccount, Conversation}};
 use std::path::PathBuf;
 use openssl::{rsa::Padding, symm};
 use reqwest::{self, StatusCode};
-use tauri::{async_runtime::handle, Manager, Wry};
+use tauri::{Manager, Wry};
 use tauri_plugin_store::{with_store, StoreCollection};
 
 /// This struct is also found in get.rs in the API.
@@ -36,15 +36,7 @@ pub async fn get(session_id: &str, app_handle: tauri::AppHandle) -> u16
 
     // retrieve all of a user's conversations
 
-    let mut account: ClientAccount = 
-    {
-        with_store(app_handle.clone(), app_handle.state::<StoreCollection<Wry>>(), PathBuf::from(".data.tmp"), |store| 
-        {
-            let data: &serde_json::Value = store.get("userdata")
-                .unwrap();
-            Ok(serde_json::from_str::<ClientAccount>(data.as_str().unwrap()).unwrap())
-        }).unwrap()
-    };
+    let mut account: ClientAccount = utils::get_client_account(app_handle.clone());
     let res = client.post("http://localhost:3000/api/message/recieve")
         .body(serde_json::to_string(&account).unwrap())
         .send()

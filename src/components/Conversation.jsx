@@ -27,6 +27,7 @@ export default function Conversation(props) {
                     let decoder = new TextDecoder("utf-8");
                     console.log(conversation)
                     if(conversation === undefined) {setMessages([]); break;}
+                    if(conversation.messages.length == 0) {setMessages([]); break;}
                     let message = conversation.messages[i];
                     console.log(message)
                     if(message === undefined) {break;}
@@ -49,15 +50,12 @@ export default function Conversation(props) {
     async function sendMessage(e)
     {
         e.preventDefault();
-        console.log(await store.entries())
-        let rawuserdata = await store.get("userdata");
-        let username = JSON.parse(rawuserdata).username;
         if(currentMsg() === "") return;
 
         // these have to be their individual variables, because there's no simple way to `.clone();` like you can in rust.
         let message = currentMsg();
         let date = Date.now()
-        await invoke("send_message_f", { sender: username, message: message, time: date, conversation: { id: props.id}});
+        await invoke("send_message_f", { message: message, time: date.toString(), target_convo_id: props.target.id});
         //setMessages([<Message text={message} username={username} time={date} />, ...messages()]);
         console.log(currentMsg() + " sent.")
         currentMsg("");
@@ -78,7 +76,7 @@ export default function Conversation(props) {
                     <form class="pl-5 pr-3">
                         <input
                             id="search-query"
-                            class={"outline-none font-sans w-48 h-5/6 border-2 p-1 pl-2 text-xs border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
+                            class={"outline-none font-sans w-48 h-5/6 border-2 p-1 pl-2 text-xs border-rose-950 border-opacity-0 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
                             onChange={(e) => { setQuery(e.currentTarget.value) }}
                             placeholder={"Search..."}
                         />

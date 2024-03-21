@@ -6,7 +6,7 @@ export default function Message(props) {
     const monthNames = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
-    let date = new Date(props.time);
+    let date = new Date(parseInt(props.time));
     let hours = date.getHours();
     let minutes = date.getMinutes();
     let ampm = hours >= 12 ? 'PM' : 'AM';
@@ -19,12 +19,12 @@ export default function Message(props) {
         <li>
             <div class="w-full flex flex-row justify-start items-start p-3 ">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg" class="w-9 h-9 ml-5" />
-                <div class="flex flex-col justify-center items-start">
+                <div class="flex flex-col justify-start items-start">
                     <div class="flex flex-row justify-center items-start">
                         <p class="pl-3 text-s font-sans font-thin text-stone-300 text-opacity-100">{props.username || "UNDEFINED"}</p>
                         <p class="pl-2 text-xxs font-sans font-thin text-stone-400 text-opacity-100">{formatteddatestring() || "UNDEFINED TIME"}</p>
                     </div>
-                    <p class="pl-3 text-xs font-sans font-thin text-stone-400 text-opacity-100">{props.text || "ERROR: NO MESSAGE"}</p>
+                    <p class="pl-3  text-xs font-sans font-thin text-stone-400 text-opacity-100">{props.text || "ERROR: NO MESSAGE"}</p>
                 </div>
             </div>
         </li>
