@@ -1,5 +1,6 @@
 pub mod register;
 pub mod login;
+pub mod logout;
 pub mod get;
-pub mod update_friend;
+pub mod update;
 use super::generics;

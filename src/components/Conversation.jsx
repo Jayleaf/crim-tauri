@@ -1,4 +1,4 @@
-import { createEffect, createSignal } from "solid-js";
+import { createEffect, createSignal, on } from "solid-js";
 import Fa from 'solid-fa'
 import { faEnvelope, faThumbtack } from '@fortawesome/free-solid-svg-icons'
 import Message from "./Message";
@@ -14,37 +14,31 @@ export default function Conversation(props) {
     const [currentMsg, setCurrentMsg] = createSignal("");
 
 
-    createEffect(() => {
+    createEffect(on(() => props.target, () => {
         console.log(props.target.id)
         // load the first 50 messages from the conversation
         console.log("loading messages...")
-        if(props.target === "") {setMessages([]); return;}
-            // find conversation by provided id
-            store.get("userdata").then(data => {
-                data = JSON.parse(data);
-                let conversation = data.conversations.find((conv) => conv.id === props.target.id);
-                for(let i = 0; i < 50; i++) {
-                    let decoder = new TextDecoder("utf-8");
-                    console.log(conversation)
-                    if(conversation === undefined) {setMessages([]); break;}
-                    if(conversation.messages.length == 0) {setMessages([]); break;}
-                    let message = conversation.messages[i];
-                    console.log(message)
-                    if(message === undefined) {break;}
-                    message.data = new Uint8Array(message.data);
-                    console.log(message.data)
-                    let text = JSON.parse(decoder.decode(message.data))
-                    let date = text.time
-                    console.log(text)
-                    text = decoder.decode(new Uint8Array(text.message))
+        if(props.target == {}) {setMessages([]); return;}
+            let conversation = props.target
+            for(let i = 0; i < 50; i++) {
+                console.log(i)
+                if (i >= conversation.messages.length) break;
+                let decoder = new TextDecoder("utf-8");
+                if(conversation === undefined) {setMessages([]); break;}
+                if(conversation.messages.length == 0) {setMessages([]); break;}
+                let message = conversation.messages[i];
+                if(message === undefined) {break;}
+                message.data = new Uint8Array(message.data);
+                let text = JSON.parse(decoder.decode(message.data))
+                let date = text.time
+                text = decoder.decode(new Uint8Array(text.message))
                     
-                    console.log("Message: " + text)
-                    // messages need to be added to the start of the list so they're rendered right.
-                    setMessages([<Message text={text} username={message.sender} time={date}  />, ...messages()]);       
-                }
-                // get the username of the person we're sending a message to
-        })
-    })
+                // messages need to be added to the start of the list so they're rendered right.
+                setMessages([<Message text={text} username={message.sender} time={date}  />, ...messages()]);        
+            }
+            // get the username of the person we're sending a message to
+        
+    }));
 
 
     async function sendMessage(e)
@@ -56,7 +50,6 @@ export default function Conversation(props) {
         let message = currentMsg();
         let date = Date.now()
         await invoke("send_message_f", { message: message, time: date.toString(), target_convo_id: props.target.id});
-        //setMessages([<Message text={message} username={username} time={date} />, ...messages()]);
         console.log(currentMsg() + " sent.")
         currentMsg("");
         e.target.reset();

@@ -19,7 +19,6 @@ pub fn get_client_account(app_handle: tauri::AppHandle) -> ClientAccount
         {
                 let data: &serde_json::Value = store.get("userdata")
                     .unwrap();
-                println!("data: {:?}", data);
                 let deserialized: ClientAccount =
                 {
                     match data.as_str()

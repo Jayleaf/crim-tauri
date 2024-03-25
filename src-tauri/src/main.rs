@@ -3,17 +3,21 @@
 mod generics;
 mod user;
 mod messaging;
-use std::path::PathBuf;
-use messaging::send;
+use std::{ptr::null, sync::{Arc, Mutex}};
+use generics::structs::{ClientAccount, Conversation, EncryptedMessage, RawMessage, UpdateAction, Tx, WSPacket, WSAction};
+use user::{register::register, login::login, get::get, update::update};
 use openssl::{rsa::Padding, symm};
-use reqwest::{self, StatusCode};
-use tauri::{async_runtime::handle, Manager, Wry};
-use tauri_plugin_store::{with_store, StoreCollection};
-use tokio::runtime::Runtime;
-use crate::{generics::enums::FriendAction, messaging::send::send, user::{get::get, login::login, register::register, update_friend::update_friend}};
+use tokio::sync::mpsc;
+use tokio_tungstenite::connect_async;
+use tungstenite::protocol::Message;
+use reqwest::StatusCode;
+use futures::{StreamExt, future, pin_mut, SinkExt};
+use tauri::{Manager, State};
+use once_cell::sync::OnceCell;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
+static INSTANCE: OnceCell<tauri::AppHandle> = OnceCell::new();
 
 
 #[tauri::command]
@@ -38,9 +42,18 @@ async fn get_f(sid: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
 }
 
 #[tauri::command]
-async fn add_friend_f(target: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
+async fn update_f(action: &str, data: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
 {
-    let res: u16 = update_friend(target, FriendAction::Add, app_handle.clone()).await.as_u16();
+    let action: UpdateAction = match action
+    {
+        "AddFriend" => UpdateAction::AddFriend,
+        "RemoveFriend" => UpdateAction::RemoveFriend,
+        "ChangePassword" => UpdateAction::ChangePassword,
+        "ChangeUsername" => UpdateAction::ChangeUsername,
+        _ => { return Ok(400) }
+    };
+
+    let res: u16 = update(action, data, app_handle.clone()).await.as_u16();
     Ok(res)
 }
 
@@ -49,43 +62,61 @@ async fn add_friend_f(target: &str, app_handle: tauri::AppHandle) -> Result<u16,
 #[tauri::command(rename_all = "snake_case")]
 async fn send_message_f(message: &str, time: &str, target_convo_id: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
 {
-    let account: generics::structs::ClientAccount = generics::utils::get_client_account(app_handle.clone());
-    let key = account.conversations.iter().find(|x| x.id == target_convo_id).unwrap().keys.iter().find(|x| x.owner == account.username).unwrap();
-
-    // get conversation key and decrypt it
-    let cipher: symm::Cipher = symm::Cipher::aes_256_cbc();
-    let private_key: openssl::rsa::Rsa<openssl::pkey::Private> = openssl::rsa::Rsa::private_key_from_pem(std::fs::read(".pkey.key").unwrap().as_ref()).unwrap();
-    let mut decrypted_convo_key: Vec<u8> = vec![0; private_key.size() as usize];
-    private_key.private_decrypt(&key.key, &mut decrypted_convo_key, Padding::PKCS1).expect("Failed to decrypt convo key");
-    decrypted_convo_key.retain(|&x| x != 0_u8); 
-
-    // declare rawmessage
-    let message: generics::structs::RawMessage = generics::structs::RawMessage
-    {
-        message: message.to_string().into_bytes(),
-        sender: account.username,
-        time: time.to_string()
-    };
-
-    println!("Message: {:?}", message);
-    // encrypt serialized rawmessage
-    let serialized_message: String = serde_json::to_string(&message).unwrap();
-    let encrypted_message: Vec<u8> = symm::encrypt(cipher, &decrypted_convo_key, None, serialized_message.as_bytes()).unwrap();
-    let emessage: generics::structs::EncryptedMessage = generics::structs::EncryptedMessage
-    {
-        data: encrypted_message,
-        sender: message.sender, // this is filled out by the server.
-        dest_convo_id: target_convo_id.to_string(), // again, validated by the server, but has to be provided.
-        sender_sid: account.session_id
-    };
-    let res: u16 = send(emessage, app_handle.clone()).await;
-    Ok(res)
+    let res = messaging::send::send(message, time, target_convo_id, app_handle.clone()).await;
+    Ok(0)
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    // set up the websocket
+
+    let (tx, mut rx) = mpsc::channel::<WSPacket>(100);
+    let url = "ws://localhost:3000/api/ws"; // i don't want to set up TLS in a dev environment
+    let (ws_stream, _) = connect_async(url).await.expect("Failed to connect to websocket.");
+    println!("Connected to websocket.");
+    let (mut write, mut read) = ws_stream.split();
+
+    let send_task = tokio::spawn(async move {
+        while let Some(msg) = rx.recv().await {
+            let packet = serde_json::to_string(&msg).unwrap();
+            if write.send(Message::Text(packet)).await.is_err()
+            {
+                println!("Failed to send message");
+                return;
+            }
+            println!("Sent message: {:?}", msg)
+        }
+    });
+
+    let recv_task = tokio::spawn(async move {
+        while let Some(Ok(msg)) = read.next().await {
+            let Ok(packet) = serde_json::from_str::<WSPacket>(&msg.to_string())
+            else { println!("Failed to parse packet: {:?}", msg); continue; };
+            match packet.action
+            {
+                WSAction::ReceiveMessage(message) => messaging::receive::recieve(message, INSTANCE.get().unwrap().clone()).await,
+               _ => { println!("Received unknown packet: {:?}", packet) }
+            }
+        }
+    });
+
+    // set up tauri
     tauri::Builder::default()
+        .manage(Arc::new(Mutex::new(tx)))
         .plugin(tauri_plugin_store::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_friend_f, send_message_f])
+        .setup(|app| {
+            INSTANCE.set(app.handle().clone()).unwrap();
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, update_f, send_message_f])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+    
+    
+    // futures
+    pin_mut!(send_task, recv_task);
+    future::select(send_task, recv_task).await;
+
+
 }
+

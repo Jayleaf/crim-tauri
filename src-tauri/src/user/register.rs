@@ -21,14 +21,13 @@ pub async fn register(username: &str, password: &str) -> String
             .body(json)
             .send()
             .await;
-        if res.as_ref().is_err()
+
+        let status = res.as_ref().unwrap().status();
+        let text = res.unwrap().text().await.unwrap();
+        println!("{:?} || {}", &status, &text);
+        if status.is_success()
         {
-            return "Error registering.".to_string()
-        }
-        println!("Status: {:?}", res.as_ref().unwrap().status());
-        if res.as_ref().unwrap().status().is_success()
-        {
-            println!("{:?}", res.unwrap().text().await.unwrap());
+            println!("{:?}", &text);
             "Registered.".to_string()
         }
         else

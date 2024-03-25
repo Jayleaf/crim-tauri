@@ -1,5 +1,10 @@
-use serde::{Deserialize, Serialize};
 
+
+
+use std::sync::Arc;
+use std::sync::Mutex;
+use serde::{Deserialize, Serialize};
+use crate::mpsc::Sender;
 
 #[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct ClientAccount
@@ -12,7 +17,7 @@ pub struct ClientAccount
     pub session_id: String
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct Conversation
 {
     pub id: String,
@@ -21,7 +26,7 @@ pub struct Conversation
     pub messages: Vec<EncryptedMessage>
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct EncryptedMessage
 {
     pub data: Vec<u8>,
@@ -30,7 +35,7 @@ pub struct EncryptedMessage
     pub sender_sid: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct UserKey
 {
     pub owner: String,
@@ -43,5 +48,57 @@ pub struct RawMessage
     pub sender: String,
     pub message: Vec<u8>,
     pub time: String
+}
+
+#[derive(Deserialize, Serialize, Debug, Default, Clone, Eq, PartialEq)]
+/// An enum representing the different actions that can be taken when updating a user's data.
+pub enum UpdateAction
+{
+    #[default]
+    None,
+    ChangeUsername,
+    ChangePassword,
+    AddFriend,
+    RemoveFriend,
+}
+
+/// A unique user data struct, made specifically for updating one specific field of userdata.
+/// 
+/// ## Fields
+/// * [`field`][`std::string::String`] - The field to be updated.
+/// * [`data`][`std::string::String`] - The data to replace the old data of specified field with
+/// * [`action`][`UpdateAction`] - The action to be taken with the data.
+/// * [`session_id`][`std::string::String`] - The session ID of the user making the request.
+/// 
+#[derive(Deserialize, Serialize, Debug, Clone, Default)]
+pub struct UpdateUser
+{
+    pub data: String,
+    pub action: UpdateAction,
+    pub session_id: String
+}
+
+pub type Tx = Arc<Mutex<Sender<WSPacket>>>;
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub enum WSAction
+{
+    SendMessage(EncryptedMessage),
+    ReceiveMessage(EncryptedMessage),
+    CreateConversation(Vec<String>),
+    DeleteConversation(String),
+    AddFriend(String),
+    RemoveFriend(String),
+    Register(),
+    Disconnect(),
+    Info(String),
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct WSPacket
+{
+    pub sender: String,
+    pub sid: String,
+    pub action: WSAction
 }
 

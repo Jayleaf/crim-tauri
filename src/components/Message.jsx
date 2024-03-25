@@ -1,14 +1,12 @@
-import { For, createSignal, onMount } from "solid-js";
+import { createSignal, onMount } from "solid-js";
 export default function Message(props) {
     // javascript SUCKS
     const [formatteddatestring, setFormatteddatestring] = createSignal("");
     onMount(() => {
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
+    const monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
     let date = new Date(parseInt(props.time));
     let hours = date.getHours();
-    let minutes = date.getMinutes();
+    let minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
     let ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12;
     let formattedTime = hours + ':' + minutes + ' ' + ampm;

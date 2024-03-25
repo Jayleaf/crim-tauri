@@ -1,4 +1,4 @@
-import { For, createEffect, createSignal } from "solid-js";
+import { For, createEffect, createSignal, untrack, on } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import { toast, Toaster } from 'solid-toast';
@@ -16,16 +16,23 @@ function Messenger(props) {
   const [warnQuery, setWarnQuery] = createSignal("");
   const [activeConversation, setActiveConversation] = createSignal({}); // this is a convo obj
   
-  createEffect(() => {
+  // stop this from infinitely recursing by listening to these props specifically
+  createEffect(on(() => (props.data.username, props.data.friends, props.data.conversations), () => {
     // load up the user data
     const data = typeof props.data == "string" ? JSON.parse(props.data) : props.data;
-    console.log(data)
+    console.log("tried to refresh")
+
     if(data) {
       setUsername(data.username);
       setFriends(data.friends);
       setConversations(data.conversations);
+      if(activeConversation().id && data) {
+        console.log("refreshing active conversation")
+        console.log(activeConversation())
+        untrack(() => setActiveConversation(conversations().find((conv) => conv.id === activeConversation().id)));
+      }
     }
-  })
+  }))
 
   async function logout() {
     // invoke logout
@@ -38,7 +45,7 @@ function Messenger(props) {
       setWarnQuery("Please enter a name.")
       return;
     }
-    let res = await invoke("add_friend_f", { target: query() });
+    let res = await invoke("update_f", { action: "AddFriend", data: query()});
     switch (res) {
       case 200:
         toast.success(`Successfully added ${query()} as a friend! 🎉`)
