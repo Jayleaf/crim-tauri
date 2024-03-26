@@ -6,6 +6,7 @@ import NavBar from "./components/NavBar";
 import Fa from 'solid-fa'
 import { faArrowRightFromBracket, faBell, faGear } from '@fortawesome/free-solid-svg-icons'
 import Conversation from "./components/Conversation";
+import FriendMgmt from "./components/FriendMgmt";
 
 
 function Messenger(props) {
@@ -156,10 +157,10 @@ function Messenger(props) {
             </div>
           </div>
 
-          <div class="w-full bg-black bg-opacity-20 h-full">
-            <div class="block">
+          <div class="w-full h-screen bg-black bg-opacity-20">
+            <div class="">
               
-              {activeConversation().id? <Conversation target={activeConversation()} users={activeConversation().users?.join(', ')}/> : "friend menu" }
+              {activeConversation().id? <Conversation target={activeConversation()} users={activeConversation().users?.join(', ')}/> : <FriendMgmt friends={friends()}/> }
             </div>
           </div>
         </div>

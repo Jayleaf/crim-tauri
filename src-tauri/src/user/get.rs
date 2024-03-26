@@ -29,7 +29,6 @@ pub async fn get(session_id: &str, app_handle: tauri::AppHandle) -> u16
         let path = PathBuf::from(".data.tmp");
         with_store(app_handle.clone(), stores, path, |store| 
         {
-            // this is a little 𝓯𝓻𝓮𝓪𝓴𝔂 😜 
             store.insert("userdata".to_string(), serde_json::Value::String(serde_json::to_string(&result).unwrap()))
         }).expect("failed to write");
     }

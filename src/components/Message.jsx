@@ -22,7 +22,7 @@ export default function Message(props) {
                         <p class="pl-3 text-s font-sans font-thin text-stone-300 text-opacity-100">{props.username || "UNDEFINED"}</p>
                         <p class="pl-2 text-xxs font-sans font-thin text-stone-400 text-opacity-100">{formatteddatestring() || "UNDEFINED TIME"}</p>
                     </div>
-                    <p class="pl-3  text-xs font-sans font-thin text-stone-400 text-opacity-100">{props.text || "ERROR: NO MESSAGE"}</p>
+                    <p class="pl-3  text-xs font-sans font-thin text-stone-300 text-opacity-100">{props.text || "ERROR: NO MESSAGE"}</p>
                 </div>
             </div>
         </li>

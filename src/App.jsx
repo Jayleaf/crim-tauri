@@ -90,14 +90,14 @@ function App() {
 
         />
         <h1 class="text-4xl font-sans font-bold text-stone-300">Welcome to CRIM.</h1>
-        <h2 class="text-xl font-sans font-bold text-stone-400">Please log in or sign up to access your messages.</h2>
+        <h2 class="pt-3 text-xl font-sans font-bold text-stone-400">Please log in or sign up to access your messages.</h2>
 
         <form
           class="flex flex-col items-center pt-24 w-full h-80 select-none gap-y-4 "
         >
           <input
             id="username-input"
-            class={warnUsername() ? "animate-pulse outline-none font-sans w-96 h-20 p-2 border-rose-500 border-2 text-xl border-opacity-50 rounded-md bg-opacity-10 bg-stone-300" : "outline-none font-sans w-96 h-20 p-2 border-2 text-xl border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
+            class={`outline-none font-sans w-96 h-20 p-2 border-2 text-xl ${warnPassword() ? "border-rose-400" : "border-black"} border-opacity-25 rounded-md bg-opacity-10 bg-black text-stone-300`}
             onChange={(e) => { setUsername(e.currentTarget.value) }}
             onInput={() => setWarnUsername(false)}
             disabled={loading()}
@@ -105,7 +105,7 @@ function App() {
           />
           <input
             id="pwd-input"
-            class={warnPassword() ? "animate-pulse outline-none font-sans w-96 h-20 p-2 border-rose-500 border-2 text-xl border-opacity-50 rounded-md bg-opacity-10 bg-stone-300" : "outline-none font-sans w-96 h-20 p-2 border-2 text-xl border-rose-950 border-opacity-50 rounded-md bg-opacity-10 bg-stone-300 text-stone-400"}
+            class={`outline-none font-sans w-96 h-20 p-2 border-2 text-xl ${warnPassword() ? "border-rose-400" : "border-black"} border-opacity-25 rounded-md bg-opacity-10 bg-black text-stone-300`}
             onChange={(e) => { setPassword(e.currentTarget.value) }}
             onInput={() => setWarnPassword(false)}
             disabled={loading()}
@@ -121,11 +121,12 @@ function App() {
           w-40 
           h-10 p-2 
           border-2 
-          border-rose-950 
-          border-opacity-50 
-          rounded-md bg-opacity-10 
-          bg-stone-300 
-          text-stone-400 
+          border-black
+          border-opacity-25
+          rounded-md
+          bg-black 
+          bg-opacity-10
+          text-stone-300 
           transition ease-in-out duration-200
           hover:scale-105"
             type="submit"
@@ -139,11 +140,12 @@ function App() {
           w-40 
           h-10 p-2 
           border-2 
-          border-rose-950 
-          border-opacity-50 
-          rounded-md bg-opacity-10 
-          bg-stone-300 
-          text-stone-400 
+          border-black
+          border-opacity-25
+          rounded-md
+          bg-black 
+          bg-opacity-10
+          text-stone-300 
           transition ease-in-out duration-200
           hover:scale-105"
             type="submit"
