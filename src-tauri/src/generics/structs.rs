@@ -92,6 +92,7 @@ pub enum WSAction
     Register(),
     Disconnect(),
     Info(String),
+    RecieveArbitraryInfo(String, String), // (Serialized Data, Identifying Key)
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
