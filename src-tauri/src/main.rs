@@ -14,6 +14,7 @@ use reqwest::StatusCode;
 use futures::{StreamExt, future, pin_mut, SinkExt};
 use tauri::{Manager, State};
 use once_cell::sync::OnceCell;
+mod websockets;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
