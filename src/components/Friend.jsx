@@ -2,9 +2,8 @@ import { Fa } from 'solid-fa'
 import { faMessage, faThumbtack, faTrashCan } from '@fortawesome/free-solid-svg-icons'
 import { Modal } from 'solid-js-modal';
 import 'solid-js-modal/dist/style.css';
-import { createSignal } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 import { Transition } from "solid-transition-group"
-import './friend.css'
 export default function Friend(props) {
     let modalRef;
     const { 0: isVisible, 1: setIsVisibleState } = createSignal(false);

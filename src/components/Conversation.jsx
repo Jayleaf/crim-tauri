@@ -28,7 +28,8 @@ export default function Conversation(props) {
                 if(conversation.messages.length == 0) {setMessages([]); break;}
                 let message = conversation.messages[i];
                 if(message === undefined) {break;}
-                message.data = new Uint8Array(message.data);
+                message.data = message.data == typeof Uint8Array? message.data : new Uint8Array(message.data);
+                console.log(message.data)
                 let text = JSON.parse(decoder.decode(message.data))
                 let date = text.time
                 text = decoder.decode(new Uint8Array(text.message))

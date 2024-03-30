@@ -38,6 +38,7 @@ async fn register_f(username: &str, password: &str) -> Result<String, ()>
 #[tauri::command]
 async fn get_f(sid: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
 {
+    println!("Getting user data.");
     let res: u16 = get(sid, app_handle.clone()).await;
     Ok(res)
 }

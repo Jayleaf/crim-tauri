@@ -75,7 +75,7 @@ function App() {
   return (
     <div class="flex flex-col w-screen h-screen">
       <NavBar />
-      <div class="flex flex-col text-center items-center w-screen text-l pt-24 sm:text-base">
+      <div class="pb-24 flex flex-col text-center items-start h-full align-center justify-center w-screen text-l pt-24 sm:text-base">
         <Toaster
           toastOptions={{
             duration: 2000,
@@ -89,15 +89,18 @@ function App() {
           }}
 
         />
-        <h1 class="text-4xl font-sans font-bold text-stone-300">Welcome to CRIM.</h1>
-        <h2 class="pt-3 text-xl font-sans font-bold text-stone-400">Please log in or sign up to access your messages.</h2>
-
+        <div class="pl-8 flex flex-col align-center justify-center items-start ">
+        <h1 class="text-2xl lg:text-4xl font-sans font-bold text-stone-300">Welcome to CRIM. 🦀</h1>
+        <h2 class="pt-3 text-l lg:leading-7 lg:text-[1.1rem] lg:pt-5 pb-4 text-start font-sans font-bold text-stone-400">Please log in or sign up to access <br/> your messages.</h2>
+        <hr class="border-double border-[1.5px] border-white border-opacity-20 w-80"/>
+        </div>
+        
         <form
-          class="flex flex-col items-center pt-24 w-full h-80 select-none gap-y-4 "
+          class="flex flex-col items-start justify-center pl-8 w-full h-48 select-none gap-y-4 "
         >
           <input
             id="username-input"
-            class={`outline-none font-sans w-96 h-20 p-2 border-2 text-xl ${warnPassword() ? "border-rose-400" : "border-black"} border-opacity-25 rounded-md bg-opacity-10 bg-black text-stone-300`}
+            class={`outline-none font-sans w-64 h-12 lg:h-14 lg:w-72 p-2 border-2 text-s ${warnPassword() ? "border-rose-400" : "border-black"} border-opacity-25 rounded-md bg-opacity-10 bg-black text-stone-300`}
             onChange={(e) => { setUsername(e.currentTarget.value) }}
             onInput={() => setWarnUsername(false)}
             disabled={loading()}
@@ -105,7 +108,7 @@ function App() {
           />
           <input
             id="pwd-input"
-            class={`outline-none font-sans w-96 h-20 p-2 border-2 text-xl ${warnPassword() ? "border-rose-400" : "border-black"} border-opacity-25 rounded-md bg-opacity-10 bg-black text-stone-300`}
+            class={`outline-none font-sans w-64 h-12 p-2 lg:h-14 lg:w-72 border-2 text-s ${warnPassword() ? "border-rose-400" : "border-black"} border-opacity-25 rounded-md bg-opacity-10 bg-black text-stone-300`}
             onChange={(e) => { setPassword(e.currentTarget.value) }}
             onInput={() => setWarnPassword(false)}
             disabled={loading()}
@@ -113,13 +116,15 @@ function App() {
             placeholder={warnPassword() ? warnPassword() : "Enter your password..."}
           />
         </form>
-        <div class="flex flex-row items-center justify-center w-full pt-0 gap-x-10">
+        <div class="pl-8 flex flex-row items-start justify-start w-full pt-0 gap-x-3">
           <button
             class="
           outline-none
           font-sans 
-          w-40 
-          h-10 p-2 
+          w-24 
+          h-10 p-2
+          lg:w-32
+          lg:h-12
           border-2 
           border-black
           border-opacity-25
@@ -137,8 +142,10 @@ function App() {
             class="
           outline-none
           font-sans 
-          w-40 
+          w-32 
           h-10 p-2 
+          lg:w-32
+          lg:h-12
           border-2 
           border-black
           border-opacity-25

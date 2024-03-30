@@ -1,4 +1,4 @@
-import { For, createEffect, createSignal, untrack, on } from "solid-js";
+import { For, createEffect, createSignal, untrack, on, Show } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import { toast, Toaster } from 'solid-toast';
@@ -7,6 +7,7 @@ import Fa from 'solid-fa'
 import { faArrowRightFromBracket, faBell, faGear } from '@fortawesome/free-solid-svg-icons'
 import Conversation from "./components/Conversation";
 import FriendMgmt from "./components/FriendMgmt";
+import Modal from "./components/Modal";
 
 
 function Messenger(props) {
@@ -16,12 +17,15 @@ function Messenger(props) {
   const [query, setQuery] = createSignal("");
   const [warnQuery, setWarnQuery] = createSignal("");
   const [activeConversation, setActiveConversation] = createSignal({}); // this is a convo obj
-  
+  const [modalConfirmed, setModalConfirmed] = createSignal(false);
+  const [modalFocusAction, setModalFocusAction] = createSignal("");
+
+
   // stop this from infinitely recursing by listening to these props specifically
   createEffect(on(() => (props.data.username, props.data.friends, props.data.conversations), () => {
     // load up the user data
     const data = typeof props.data == "string" ? JSON.parse(props.data) : props.data;
-    console.log("tried to refresh")
+    console.log(data)
 
     if(data) {
       setUsername(data.username);
@@ -35,8 +39,20 @@ function Messenger(props) {
     }
   }))
 
+  createEffect((modalConfirmed) => {
+    if(modalConfirmed()) {
+      switch(modalFocusAction()) {
+        case "logout":
+          untrack(() => setModalConfirmed(false));
+          setModalFocusAction("");
+          window.eval("window.location.replace('index.html')");
+          break;
+      }
+    }
+  });
+
   async function logout() {
-    // invoke logout
+    setModalFocusAction("");
     window.eval("window.location.replace('index.html')");
   }
 
@@ -82,6 +98,7 @@ function Messenger(props) {
     }
 
 
+
   return (
     <div>
       <div class="flex flex-col h-[100vh] overflow-hidden">
@@ -100,6 +117,11 @@ function Messenger(props) {
 
         />
         <div class="flex flex-row h-[100vh]">
+        <Show when={modalFocusAction() != ""} fallback={<div/>}>
+          <div class="">
+            <Modal setModalConfirmed={setModalConfirmed} title={"Logout"} subtext={"Are you sure you want to log out?"}/>
+          </div>
+        </Show>
           <div class="w-[200px] max-w-[200px] min-w-[200px] bg-black bg-opacity-40 h-full">
             <div class="flex flex-col h-full">
               <div class="align-middle text-center justify-center pt-5 h-[50x]">
@@ -144,7 +166,7 @@ function Messenger(props) {
                     <button class="rounded-full w-8 h-8 bg-black bg-opacity-40 justify-center text-center transition ease-in-out duration-200 hover:bg-opacity-30">
                       <Fa icon={faBell} color="#D6D3D1" class="" translateX={0.55} />
                     </button>
-                    <button onClick={() => logout()} class="rounded-full w-8 h-8 bg-black bg-opacity-40 justify-center text-center transition ease-in-out duration-200 hover:bg-opacity-30">
+                    <button onClick={() => setModalFocusAction("logout")} class="rounded-full w-8 h-8 bg-black bg-opacity-40 justify-center text-center transition ease-in-out duration-200 hover:bg-opacity-30">
                       <Fa icon={faArrowRightFromBracket} color="#D6D3D1" class="" translateX={0.55} />
                     </button>
                   </div>
