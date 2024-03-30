@@ -1,4 +1,4 @@
-import { For, createEffect, createSignal, untrack, on, Show } from "solid-js";
+import { For, createEffect, createSignal, untrack, on, Show, onMount } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import { toast, Toaster } from 'solid-toast';
@@ -20,8 +20,20 @@ function Messenger(props) {
   const [modalConfirmed, setModalConfirmed] = createSignal(false);
   const [modalFocusAction, setModalFocusAction] = createSignal("");
 
+  function rSetModalConfirmed(val)
+  {
+    setModalConfirmed(val)
+    console.log(modalConfirmed())
+    return;
+  }
+
+  onMount(() => {
+    setModalConfirmed(false);
+    setModalFocusAction("");
+  })
 
   // stop this from infinitely recursing by listening to these props specifically
+  
   createEffect(on(() => (props.data.username, props.data.friends, props.data.conversations), () => {
     // load up the user data
     const data = typeof props.data == "string" ? JSON.parse(props.data) : props.data;
@@ -39,8 +51,9 @@ function Messenger(props) {
     }
   }))
 
-  createEffect((modalConfirmed) => {
-    if(modalConfirmed()) {
+  createEffect(() => {
+    console.log(`Effect`)
+    if(modalConfirmed()){
       switch(modalFocusAction()) {
         case "logout":
           untrack(() => setModalConfirmed(false));
@@ -50,11 +63,6 @@ function Messenger(props) {
       }
     }
   });
-
-  async function logout() {
-    setModalFocusAction("");
-    window.eval("window.location.replace('index.html')");
-  }
 
   async function addFriend(e) {
     e.preventDefault();
@@ -106,7 +114,7 @@ function Messenger(props) {
         <Toaster
           toastOptions={{
             duration: 2000,
-            position: "top-center",
+            position: "bottom-right",
             style: {
               background: 'rgb(0, 0, 0, 0.5)',
               color: '#FFFFFF',
@@ -119,7 +127,7 @@ function Messenger(props) {
         <div class="flex flex-row h-[100vh]">
         <Show when={modalFocusAction() != ""} fallback={<div/>}>
           <div class="">
-            <Modal setModalConfirmed={setModalConfirmed} title={"Logout"} subtext={"Are you sure you want to log out?"}/>
+            <Modal setModalConfirmed={rSetModalConfirmed} setModalFocusAction={setModalFocusAction} modalFocusAction={modalFocusAction}/>
           </div>
         </Show>
           <div class="w-[200px] max-w-[200px] min-w-[200px] bg-black bg-opacity-40 h-full">

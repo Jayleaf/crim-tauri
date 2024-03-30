@@ -12,16 +12,20 @@ if (res === 401 || res === 403) {
     window.eval("window.location.replace('index.html')");
 }
 
-
 const [data, setData] = createSignal(null);
-
-const unlisten = await listen('update', async () => {
-    console.log('updated')
+async function updateData() {
     const ud = await store.get("userdata");
     setData(ud);
-  })
+}
 
-emit('update', { update: true}).then(() =>
+await listen('update', async () => {
+    console.log('updated')
+    updateData();
+})
+
+emit('update', { update: true}).then(async () =>
 {
+    await updateData();
+    console.log(data())
     render(() => <Messenger data={data()}/>, document.getElementById("root"));
 })
