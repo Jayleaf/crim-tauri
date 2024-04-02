@@ -1,8 +1,5 @@
 use super::generics::structs::ClientAccount;
-use std::path::PathBuf;
-use reqwest::{self, StatusCode};
-use tauri::{async_runtime::handle, Manager, Wry};
-use tauri_plugin_store::{with_store, StoreCollection};
+use reqwest;
 
 pub async fn register(username: &str, password: &str) -> String
 {

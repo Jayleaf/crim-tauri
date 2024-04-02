@@ -4,9 +4,9 @@ use crate::generics::structs::Tx;
 use super::generics::structs::{ClientAccount, WSPacket, WSAction};
 use std::{io::Write, path::PathBuf};
 use reqwest::{self, StatusCode};
-use tauri::{async_runtime::handle, Manager, Wry};
+use tauri::{Manager, Wry};
 use tauri_plugin_store::{with_store, StoreCollection};
-use openssl::{rsa::Rsa, pkey::PKey};
+use openssl::rsa::Rsa;
 
 pub async fn login(username: &str, password: &str, app_handle: tauri::AppHandle) -> StatusCode 
 {

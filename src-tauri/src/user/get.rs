@@ -1,7 +1,7 @@
-use super::generics::{utils, structs::{ClientAccount, Conversation}};
+use super::generics::structs::ClientAccount;
 use std::path::PathBuf;
 use openssl::{rsa::Padding, symm};
-use reqwest::{self, StatusCode};
+use reqwest;
 use tauri::{Manager, Wry};
 use tauri_plugin_store::{with_store, StoreCollection};
 

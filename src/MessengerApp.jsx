@@ -8,7 +8,11 @@ import { faArrowRightFromBracket, faBell, faGear } from '@fortawesome/free-solid
 import Conversation from "./components/Conversation";
 import FriendMgmt from "./components/FriendMgmt";
 import Modal from "./components/Modal";
+import { emit, listen } from '@tauri-apps/api/event'
 
+await listen('infotoast', async (event) => {
+  toast(event.payload, { icon: "📢" })
+})
 
 function Messenger(props) {
   const [username, setUsername] = createSignal("");

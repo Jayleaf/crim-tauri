@@ -4,6 +4,7 @@ import { Modal } from 'solid-js-modal';
 import 'solid-js-modal/dist/style.css';
 import { createSignal, Show } from 'solid-js';
 import { Transition } from "solid-transition-group"
+import { invoke } from "@tauri-apps/api/tauri";
 export default function Friend(props) {
     let modalRef;
     const { 0: isVisible, 1: setIsVisibleState } = createSignal(false);
@@ -12,7 +13,7 @@ export default function Friend(props) {
         e.preventDefault();
         setIsVisibleState(false); 
         modalRef.close();
-        console.log(`${username} removed.`)
+        invoke("add_remove_friend", { friend: username, action: "remove"});
         console.log(isVisible())
     }
 

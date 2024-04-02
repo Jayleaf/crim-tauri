@@ -3,16 +3,15 @@
 mod generics;
 mod user;
 mod messaging;
-use std::{ptr::null, sync::{Arc, Mutex}};
-use generics::structs::{ClientAccount, Conversation, EncryptedMessage, RawMessage, UpdateAction, Tx, WSPacket, WSAction};
-use user::{register::register, login::login, get::get, update::update};
-use openssl::{rsa::Padding, symm};
+use std::sync::{Arc, Mutex};
+use generics::structs::{UpdateAction, WSPacket, WSAction};
+use tauri::Manager;
+use user::{register::register, login::login, get::get, update::update, friends::{add_friend::add_friend, remove_friend::remove_friend}};
 use tokio::sync::mpsc;
 use tokio_tungstenite::connect_async;
 use tungstenite::protocol::Message;
-use reqwest::StatusCode;
+use reqwest::{redirect::Action, StatusCode};
 use futures::{StreamExt, future, pin_mut, SinkExt};
-use tauri::{Manager, State};
 use once_cell::sync::OnceCell;
 mod websockets;
 
@@ -44,19 +43,14 @@ async fn get_f(sid: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
 }
 
 #[tauri::command]
-async fn update_f(action: &str, data: &str, app_handle: tauri::AppHandle) -> Result<u16, ()>
+async fn add_remove_friend(action: &str, friend: &str, app_handle: tauri::AppHandle) -> Result<(), ()>
 {
-    let action: UpdateAction = match action
+    match action 
     {
-        "AddFriend" => UpdateAction::AddFriend,
-        "RemoveFriend" => UpdateAction::RemoveFriend,
-        "ChangePassword" => UpdateAction::ChangePassword,
-        "ChangeUsername" => UpdateAction::ChangeUsername,
-        _ => { return Ok(400) }
-    };
-
-    let res: u16 = update(action, data, app_handle.clone()).await.as_u16();
-    Ok(res)
+        "add" => {return add_friend(friend, app_handle).await.map_err(|e| panic!("{e}")) },
+        "remove" =>{ return remove_friend(friend, app_handle).await.map_err(|e| panic!("{e}")) },
+        _ => return Err(())
+    }
 }
 
 
@@ -92,12 +86,15 @@ async fn main() {
 
     let recv_task = tokio::spawn(async move {
         while let Some(Ok(msg)) = read.next().await {
-            let Ok(packet) = serde_json::from_str::<WSPacket>(&msg.to_string())
-            else { println!("Failed to parse packet: {:?}", msg); continue; };
+            let packet = serde_json::from_str::<WSPacket>(msg.into_text().unwrap().as_ref()).expect("Failed to parse packet.");
+            println!("Received packet: {:?}", packet);
+            let handle_instance: tauri::AppHandle = INSTANCE.get().unwrap().clone();
             match packet.action
             {
-                WSAction::ReceiveMessage(message) => messaging::receive::recieve(message, INSTANCE.get().unwrap().clone()).await,
-               _ => { println!("Received unknown packet: {:?}", packet) }
+                WSAction::RecieveArbitraryInfo(x, y) => websockets::parse_arbitrary::parse_arbitrary_packet((x, y), handle_instance).await.map_err(|e| panic!("{e}")).ok().unwrap(),
+                WSAction::ReceiveMessage(message) => messaging::receive::recieve(message, handle_instance).await.map_err(|e| panic!("{e}")).ok().unwrap(),
+                WSAction::Info(data) => handle_instance.emit_all("infotoast", data).map_err(|e| panic!("{e}")).ok().unwrap(),
+               _ => {println!("Received unknown packet: {:?}", packet);}
             }
         }
     });
@@ -110,7 +107,7 @@ async fn main() {
             INSTANCE.set(app.handle().clone()).unwrap();
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, update_f, send_message_f])
+        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_remove_friend, send_message_f])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     

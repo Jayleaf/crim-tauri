@@ -76,10 +76,10 @@ function App() {
     <div class="flex flex-col w-screen h-screen">
       <NavBar />
       <div class="pb-24 flex flex-col text-center items-start h-full align-center justify-center w-screen text-l pt-24 sm:text-base">
-        <Toaster
+      <Toaster
           toastOptions={{
             duration: 2000,
-            position: "top-center",
+            position: "bottom-right",
             style: {
               background: 'rgb(0, 0, 0, 0.5)',
               color: '#FFFFFF',

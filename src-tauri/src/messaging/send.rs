@@ -16,7 +16,7 @@ use openssl::rsa::Padding;
 /// * [`Result<(), String>`] - A result containing a [`SendError`][`tokio::sync::mpsc::error::SendError<WSPacket>`] if the message could not be sent.
 pub async fn send(message: &str, time: &str, target_convo_id: &str, app_handle: tauri::AppHandle) -> Result<(), String>
 {
-    let account: ClientAccount = utils::get_client_account(app_handle.clone());
+    let account: ClientAccount = utils::get_client_account(&app_handle);
     let key = account.conversations.iter().find(|x| x.id == target_convo_id).unwrap().keys.iter().find(|x| x.owner == account.username).unwrap();
 
     // get conversation key and decrypt it

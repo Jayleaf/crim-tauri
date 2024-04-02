@@ -1,10 +1,7 @@
 use crate::generics::structs::UpdateAction;
-
 use super::generics::{utils, structs::{ClientAccount, UpdateUser}};
-
 use std::path::PathBuf;
-use openssl::asn1::Asn1Object;
-use reqwest::{self, Client, StatusCode};
+use reqwest::{self, StatusCode};
 use tauri::{Wry, Manager};
 use tauri_plugin_store::{with_store, StoreCollection};
 
@@ -24,7 +21,7 @@ use tauri_plugin_store::{with_store, StoreCollection};
 pub async fn update(action: UpdateAction, data: &str, app_handle: tauri::AppHandle) -> StatusCode 
 {
     // get the serialized ClientAccount from local storage
-    let account: ClientAccount = utils::get_client_account(app_handle.clone());
+    let account: ClientAccount = utils::get_client_account(&app_handle);
     let update_val: UpdateUser = UpdateUser
     {
         data: data.to_string(), 

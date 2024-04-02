@@ -11,7 +11,7 @@ use super::generics::{utils, structs::{WSPacket, WSAction, Tx}};
 async fn logout(app_handle: tauri::AppHandle)
 {
     let tx: mpsc::Sender<WSPacket> = app_handle.state::<Tx>().lock().unwrap().clone();
-    let account = utils::get_client_account(app_handle.clone());
+    let account = utils::get_client_account(&app_handle);
     let packet = WSPacket
     {
         sender: account.username,
