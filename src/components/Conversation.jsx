@@ -18,7 +18,8 @@ export default function Conversation(props) {
         console.log(props.target.id)
         // load the first 50 messages from the conversation
         console.log("loading messages...")
-        if(props.target == {}) {setMessages([]); return;}
+        setMessages([])
+        if(props.target == {}) { return;}
             let conversation = props.target
             for(let i = 0; i < 50; i++) {
                 console.log(i)

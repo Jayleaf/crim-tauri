@@ -9,6 +9,7 @@ pub async fn register(username: &str, password: &str) -> String
         password: password.to_string(),
         friends: vec![],
         conversations: vec![],
+        friend_requests: vec![],
         session_id: "".to_string(),
     };
 

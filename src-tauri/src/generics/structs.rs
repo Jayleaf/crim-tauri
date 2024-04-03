@@ -12,6 +12,7 @@ pub struct ClientAccount
     pub username: String,
     pub password: String,
     pub friends: Vec<String>,
+    pub friend_requests: Vec<FriendRequest>,
     /// This could get really thick if the conversations are too big. Will load test eventually.
     pub conversations: Vec<Conversation>,
     pub session_id: String
@@ -87,12 +88,12 @@ pub enum WSAction
     ReceiveMessage(EncryptedMessage),
     CreateConversation(Vec<String>),
     DeleteConversation(String),
-    AddFriend(String),
+    AddFriend(FriendRequest),
     RemoveFriend(String),
     Register(),
     Disconnect(),
     Info(String),
-    RecieveArbitraryInfo(String, u16), // (Serialized Data, Identifying Key)
+    ReceiveArbitraryInfo(String, u8), // (Serialized Data, Identifying Key)
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -101,5 +102,13 @@ pub struct WSPacket
     pub sender: String,
     pub sid: String,
     pub action: WSAction
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct FriendRequest
+{
+    pub sender: String,
+    pub receiver: String,
+    pub status: String,
 }
 

@@ -9,11 +9,11 @@ export default function Friend(props) {
     let modalRef;
     const { 0: isVisible, 1: setIsVisibleState } = createSignal(false);
 
-    async function removeFriend(e, username) {
+    function removeFriend(e, username) {
         e.preventDefault();
         setIsVisibleState(false); 
         modalRef.close();
-        invoke("add_remove_friend", { friend: username, action: "remove"});
+        invoke("add_remove_friend", { friend: username, action: "remove"})
         console.log(isVisible())
     }
 

@@ -8,7 +8,7 @@ use super::generics::{utils, structs::{WSPacket, WSAction, Tx}};
 /// ## Arguments
 /// * [`app_handle`][`tauri::AppHandle`] - A handle to the Tauri application.
 /// 
-async fn logout(app_handle: tauri::AppHandle)
+pub async fn logout(app_handle: tauri::AppHandle)
 {
     let tx: mpsc::Sender<WSPacket> = app_handle.state::<Tx>().lock().unwrap().clone();
     let account = utils::get_client_account(&app_handle);

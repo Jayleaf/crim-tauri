@@ -23,6 +23,7 @@ function Messenger(props) {
   const [activeConversation, setActiveConversation] = createSignal({}); // this is a convo obj
   const [modalConfirmed, setModalConfirmed] = createSignal(false);
   const [modalFocusAction, setModalFocusAction] = createSignal("");
+  const [friendRequests, setFriendRequests] = createSignal([]);
 
   function rSetModalConfirmed(val)
   {
@@ -46,6 +47,7 @@ function Messenger(props) {
     if(data) {
       setUsername(data.username);
       setFriends(data.friends);
+      setFriendRequests(data.friend_requests);
       setConversations(data.conversations);
       if(activeConversation().id && data) {
         console.log("refreshing active conversation")
@@ -62,8 +64,7 @@ function Messenger(props) {
         case "logout":
           untrack(() => setModalConfirmed(false));
           setModalFocusAction("");
-          window.eval("window.location.replace('index.html')");
-          break;
+          invoke("logout_f").then(() => { window.eval("window.location.replace('index.html')") });
       }
     }
   });
@@ -74,28 +75,9 @@ function Messenger(props) {
       setWarnQuery("Please enter a name.")
       return;
     }
-    let res = await invoke("update_f", { action: "AddFriend", data: query()});
-    switch (res) {
-      case 200:
-        toast.success(`Successfully added ${query()} as a friend! 🎉`)
-        break;
-      case 401:
-        toast.error("Invalid session. Try relogging.")
-        break;
-      case 404:
-        toast.error("User not found.")
-        break;
-      case 403:
-        // yet to be implemented
-        toast.error("User has blocked you.")
-        break;
-      case 400:
-        toast.error("You are already friends with this user.")
-        break;
-      case 500:
-        toast.error("Server error.")
-        break;
-    }
+    await invoke("add_remove_friend", { action: "add", friend: query()})
+    toast("Sending friend request to" + query() + "...", { icon: "✉️" })
+    
   }
 
   const [show, setShow] = createSignal(false);
@@ -194,7 +176,7 @@ function Messenger(props) {
           <div class="w-full h-screen bg-black bg-opacity-20">
             <div class="">
               
-              {activeConversation().id? <Conversation target={activeConversation()} users={activeConversation().users?.join(', ')}/> : <FriendMgmt friends={friends()}/> }
+              {activeConversation().id? <Conversation target={activeConversation()} users={activeConversation().users?.join(', ')}/> : <FriendMgmt friends={friends()} username={username()} friendRequests={friendRequests()}/> }
             </div>
           </div>
         </div>

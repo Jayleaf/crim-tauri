@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 use tauri::{Manager, Wry};
 use tauri_plugin_store::{with_store, StoreCollection};
-use crate::generics::structs::Conversation;
+use crate::generics::structs::{Conversation, FriendRequest};
 
 use super::generics::{utils, structs::WSAction};
-pub async fn parse_arbitrary_packet((x, y): (String, u16), app_handle: tauri::AppHandle) -> Result<(), String> {
+pub async fn parse_arbitrary_packet((x, y): (String, u8), app_handle: tauri::AppHandle) -> Result<(), String> {
     
     let stores = app_handle.state::<StoreCollection<Wry>>();
     let path = PathBuf::from(".data.tmp");
@@ -33,13 +33,24 @@ pub async fn parse_arbitrary_packet((x, y): (String, u16), app_handle: tauri::Ap
         },
         4 => // remove a friend
         {
-            let Ok(friend) = serde_json::from_str::<String>(&x)
-            else { return Err(String::from("Error converting action to friend")) };
-            data.friends.retain(|x| x != &friend);
+            data.friends.retain(|y| y != &x);
+        },
+        5 => // add a friend request
+        {
+            let Ok(req) = serde_json::from_str::<FriendRequest>(&x)
+            else { return Err(String::from("Error converting action to friend request")) };
+            data.friend_requests.push(req);
+        },
+        6 => // remove a friend request
+        {
+            let Ok(req) = serde_json::from_str::<FriendRequest>(&x)
+            else { return Err(String::from("Error converting action to friend request")) };
+            data.friend_requests.retain(|y| y.sender != req.sender && y.receiver != req.receiver);
         },
         _ => return Err(String::from("Invalid action."))
     }
 
     with_store(app_handle.clone(), stores, path, |store| store.insert("userdata".to_string(), serde_json::Value::String(serde_json::to_string(&data).unwrap()))).expect("failed to write");
+    utils::update_store(app_handle);
     Ok(())
 }

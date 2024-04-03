@@ -19,6 +19,7 @@ pub async fn login(username: &str, password: &str, app_handle: tauri::AppHandle)
         password: password.to_string(),
         friends: vec![],
         conversations: vec![],
+        friend_requests: vec![],
         session_id: "".to_string(),
     };
 

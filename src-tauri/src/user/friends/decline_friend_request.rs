@@ -3,12 +3,14 @@ use super::generics::{utils, structs::{Tx, WSPacket, WSAction, FriendRequest}};
 use tauri::Manager;
 
 
-pub async fn add_friend(name: &str, app_handle: tauri::AppHandle) -> Result<(), String>
+pub async fn decline_friend_request(name: &str, app_handle: tauri::AppHandle) -> Result<(), String>
 {
     let client = utils::get_client_account(&app_handle);
+    let mut frq = client.friend_requests.iter().find(|x| x.sender == name || x.receiver == name).unwrap().clone();
+    frq.status = "REJECTED".to_string();
     let packet = WSPacket {
         sender: client.username.clone(),
-        action: WSAction::AddFriend(FriendRequest {sender: client.username, receiver: name.to_string(), status: "PENDING".to_string() }),
+        action: WSAction::AddFriend(frq),
         sid: client.session_id
     };
     let tx: mpsc::Sender<WSPacket> = app_handle.state::<Tx>().lock().unwrap().clone();

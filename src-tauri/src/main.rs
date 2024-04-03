@@ -6,7 +6,7 @@ mod messaging;
 use std::sync::{Arc, Mutex};
 use generics::structs::{UpdateAction, WSPacket, WSAction};
 use tauri::Manager;
-use user::{register::register, login::login, get::get, update::update, friends::{add_friend::add_friend, remove_friend::remove_friend}};
+use user::{friends::{add_friend::add_friend, decline_friend_request::decline_friend_request, remove_friend::remove_friend}, get::get, login::login, logout::logout, register::register, update::update};
 use tokio::sync::mpsc;
 use tokio_tungstenite::connect_async;
 use tungstenite::protocol::Message;
@@ -53,6 +53,18 @@ async fn add_remove_friend(action: &str, friend: &str, app_handle: tauri::AppHan
     }
 }
 
+#[tauri::command]
+async fn decline_friend_request_f(name: &str, app_handle: tauri::AppHandle) -> Result<(), ()>
+{
+    decline_friend_request(name, app_handle).await.map_err(|e| panic!("{e}"))
+}
+
+#[tauri::command]
+async fn logout_f(app_handle: tauri::AppHandle)
+{
+    logout(app_handle).await;
+}
+
 
 
 #[tauri::command(rename_all = "snake_case")]
@@ -91,7 +103,7 @@ async fn main() {
             let handle_instance: tauri::AppHandle = INSTANCE.get().unwrap().clone();
             match packet.action
             {
-                WSAction::RecieveArbitraryInfo(x, y) => websockets::parse_arbitrary::parse_arbitrary_packet((x, y), handle_instance).await.map_err(|e| panic!("{e}")).ok().unwrap(),
+                WSAction::ReceiveArbitraryInfo(x, y) => websockets::parse_arbitrary::parse_arbitrary_packet((x, y), handle_instance).await.map_err(|e| panic!("{e}")).ok().unwrap(),
                 WSAction::ReceiveMessage(message) => messaging::receive::recieve(message, handle_instance).await.map_err(|e| panic!("{e}")).ok().unwrap(),
                 WSAction::Info(data) => handle_instance.emit_all("infotoast", data).map_err(|e| panic!("{e}")).ok().unwrap(),
                _ => {println!("Received unknown packet: {:?}", packet);}
@@ -107,7 +119,7 @@ async fn main() {
             INSTANCE.set(app.handle().clone()).unwrap();
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_remove_friend, send_message_f])
+        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_remove_friend, decline_friend_request_f, send_message_f, logout_f])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     
