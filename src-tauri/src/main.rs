@@ -6,7 +6,19 @@ mod messaging;
 use std::sync::{Arc, Mutex};
 use generics::structs::{UpdateAction, WSPacket, WSAction};
 use tauri::Manager;
-use user::{friends::{add_friend::add_friend, decline_friend_request::decline_friend_request, remove_friend::remove_friend}, get::get, login::login, logout::logout, register::register, update::update};
+use user::{
+    friends::{
+        add_friend::add_friend, 
+        decline_friend_request::decline_friend_request,  
+        remove_friend::remove_friend,
+        accept_friend_request::accept_friend_request
+    }, 
+    get::get, 
+    login::login, 
+    logout::logout, 
+    register::register, 
+    update::update
+};
 use tokio::sync::mpsc;
 use tokio_tungstenite::connect_async;
 use tungstenite::protocol::Message;
@@ -57,6 +69,12 @@ async fn add_remove_friend(action: &str, friend: &str, app_handle: tauri::AppHan
 async fn decline_friend_request_f(name: &str, app_handle: tauri::AppHandle) -> Result<(), ()>
 {
     decline_friend_request(name, app_handle).await.map_err(|e| panic!("{e}"))
+}
+
+#[tauri::command]
+async fn accept_friend_request_f(name: &str, app_handle: tauri::AppHandle) -> Result<(), ()>
+{
+    accept_friend_request(name, app_handle).await.map_err(|e| panic!("{e}"))
 }
 
 #[tauri::command]
@@ -119,7 +137,7 @@ async fn main() {
             INSTANCE.set(app.handle().clone()).unwrap();
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_remove_friend, decline_friend_request_f, send_message_f, logout_f])
+        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_remove_friend, decline_friend_request_f, send_message_f, accept_friend_request_f, logout_f])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     

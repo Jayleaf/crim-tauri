@@ -47,6 +47,13 @@ pub async fn parse_arbitrary_packet((x, y): (String, u8), app_handle: tauri::App
             else { return Err(String::from("Error converting action to friend request")) };
             data.friend_requests.retain(|y| y.sender != req.sender && y.receiver != req.receiver);
         },
+        7 => // add a friend, and remove friend request
+        {
+            let Ok(req) = serde_json::from_str::<FriendRequest>(&x)
+            else { return Err(String::from("Error converting action to friend request")) };
+            data.friend_requests.retain(|y| y.sender != req.sender && y.receiver != req.receiver);
+            data.friends.push(if req.sender == data.username { req.receiver } else { req.sender });
+        },
         _ => return Err(String::from("Invalid action."))
     }
 

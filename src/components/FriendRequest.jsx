@@ -10,7 +10,7 @@ export default function FriendRequest(props) {
     var isSender = props.req.sender == props.username;
 
     function acceptRequest(username) {
-        console.log(username)
+        invoke("accept_friend_request_f", { name: username })
     }
 
     function declineRequest(username) {

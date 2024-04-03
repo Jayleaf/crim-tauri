@@ -23,8 +23,8 @@ function switchPanel(newpanel)
                         <p class="pl-2 pt-1 font-sans text-xl text-stone-400 text-opacity-100">Friend Management</p>
                     </div> 
                     <div class="flex flex-row h-full w-full">
-                        <button class={`w-1/2 bg-black ${selectedPanel() == "friends" ? "bg-opacity-25" : "bg-opacity-5"} text-stone-300 font-sans text-s`} onClick={() => switchPanel("friends")}>Friends</button>
-                        <button class={`w-1/2 bg-black ${selectedPanel() == "friend-requests" ? "bg-opacity-25" : "bg-opacity-5"} text-stone-300 font-sans text-s`} onClick={() => switchPanel("friend-requests")}>Friend Requests</button>
+                        <button class={`w-1/2 bg-black ${selectedPanel() == "friends" ? "bg-opacity-25" : "bg-opacity-5"} text-stone-300 font-sans text-xs`} onClick={() => switchPanel("friends")}>Friends</button>
+                        <button class={`w-1/2 bg-black ${selectedPanel() == "friend-requests" ? "bg-opacity-25" : "bg-opacity-5"} text-stone-300 font-sans text-xs`} onClick={() => switchPanel("friend-requests")}>Friend Requests</button>
                     </div>
                 </div>
             </div>
@@ -32,12 +32,18 @@ function switchPanel(newpanel)
             <div class="relative flex object-center w-full h-[calc(100vh-151px)] justify-start items-start">
                 <ul class = "absolute w-full h-full scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent overflow-y-scroll">
                     <Show when={selectedPanel() == "friends"}>
+                        <Show when={props.friends.length == 0}>
+                            <li class="pt-5"><p class="text-stone-400 text-opacity-100 text-center font-sans">No friends? How lonely.</p></li>
+                        </Show>
                         <For each={props.friends}>{(friend) => (
                                 <li class="py-2"><Friend name={friend}/></li>
                         )}</For>   
                     </Show>
                     <Show when={selectedPanel() == "friend-requests"}>
                         {console.log(props)}
+                        <Show when={props.friendRequests.length == 0}>
+                            <li class="pt-5"><p class="text-stone-400 text-opacity-100 text-center font-sans">You don't have any friend requests. Send some!</p></li>
+                        </Show>
                         <For each={props.friendRequests}>{(req) => (
                                 <li class="py-2"><FriendRequest username={props.username} req={req}/></li>
                         )}</For>
