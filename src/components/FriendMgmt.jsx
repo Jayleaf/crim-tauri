@@ -3,9 +3,12 @@ import { faPlus, faThumbtack, faWrench } from '@fortawesome/free-solid-svg-icons
 import { createSignal, For, Show } from 'solid-js'
 import Friend from './Friend'
 import FriendRequest from './FriendRequest'
+import FriendConvoCheck from './FriendConvoCheck'
+import {Motion, Presence} from "solid-motionone"
 
 export default function FriendMgmt(props) {
 const [query, setQuery] = createSignal("");
+const [showConvoDropdown, setShowConvoDropdown] = createSignal(false);
 const [selectedPanel, setSelectedPanel] = createSignal("friends");
 
 function switchPanel(newpanel)
@@ -59,9 +62,31 @@ function switchPanel(newpanel)
                         placeholder={"Search..."}
                     />
                     <div class="pl-5">
-                    <button class="rounded-full w-8 h-8 bg-black bg-opacity-40 justify-center flex text-center items-center transition ease-in-out duration-200 hover:bg-opacity-30">
-                        <Fa icon={faPlus} color="#D6D3D1" class="" translateX={0} />
-                    </button>
+                        <Presence exitBeforeEnter>
+                            <Show when={showConvoDropdown()}>
+                                <Motion class="absolute w-[40%] h-[40%] right-10 lg:right-32 bottom-20 bg-black bg-opacity-40 rounded-md"
+                                    initial={{opacity: 0, scale: 0.6}}
+                                    animate={{opacity: 1, scale: 1}}
+                                    exit={{opacity: 0, scale: 0.6}}
+                                    transition={{duration: 0.2}}
+                                >
+                                    <p class="p-4 text-stone-300 text-opacity-100 font-sans text-s">Start a New Conversation</p>
+                                    <div class="h-[65%]">
+                                        <ul class="w-full h-full bg-black bg-opacity-10 overflow-y-scroll scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+                                            <For each={props.friends}>{(friend) => (
+                                                <li class="py-1 flex-1"><FriendConvoCheck name={friend}/></li>
+                                            )}</For> 
+                                        </ul>
+                                    </div>
+                                    <button style={{"border-radius": "0 0 0.375rem 0.375rem" }}class=" w-full h-7 bg-black bg-opacity-0 font-sans text-stone-300 hover:bg-opacity-70 transition ease-in-out duration-200">
+                                        Confirm
+                                    </button>
+                                </Motion>      
+                            </Show>
+                        </Presence>
+                        <button onClick={(e) => { e.preventDefault(); showConvoDropdown() == true? setShowConvoDropdown(false) : setShowConvoDropdown(true)}}class="rounded-full w-8 h-8 bg-black bg-opacity-40 justify-center flex text-center items-center transition ease-in-out duration-200 hover:bg-opacity-30">
+                            <Fa icon={faPlus} color="#D6D3D1" class="" translateX={0} />
+                        </button>
                     </div>
                 </form>
             </div>

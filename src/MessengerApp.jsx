@@ -76,7 +76,7 @@ function Messenger(props) {
       return;
     }
     await invoke("add_remove_friend", { action: "add", friend: query()})
-    toast("Sending friend request to" + query() + "...", { icon: "✉️" })
+    toast("Sending friend request to " + query() + "...", { icon: "✉️" })
     
   }
 

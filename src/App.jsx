@@ -68,6 +68,7 @@ function App() {
     let result = await invoke("register_f", { username: username(), password: password() })
     if (result === "Registered.") {
       toast.success("Successfully registered! 🎉")
+      setLoading(false);
       return;
     }
   }
