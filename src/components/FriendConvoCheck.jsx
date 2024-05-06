@@ -24,7 +24,17 @@ export default function Friend(props) {
                     <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg" class="w-5 h-5 ml-2" />
                     <p class="pl-3 text-s font-sans font-thin text-stone-300 text-opacity-100">{props.name || "UNDEFINED"}</p>
                     <div class = "ml-auto pr-5 flex flex-row gap-x-3">
-                        <input type="checkbox">s</input>
+                        <input id="check" type="checkbox" onInput={() => {
+                            console.log(props.friendElements);
+                            if(document.getElementById("check").checked)
+                            {
+                                props.setFriendElements([...props.friendElements(), props.name]);
+                            }
+                            else
+                            {
+                                props.setFriendElements(props.friendElements().filter((e) => e != props.name));
+                            }
+                        }}>s</input>
                     </div>
                 </div>
             </div>

@@ -5,15 +5,22 @@ import Friend from './Friend'
 import FriendRequest from './FriendRequest'
 import FriendConvoCheck from './FriendConvoCheck'
 import {Motion, Presence} from "solid-motionone"
+import { invoke } from "@tauri-apps/api/tauri";
 
 export default function FriendMgmt(props) {
 const [query, setQuery] = createSignal("");
 const [showConvoDropdown, setShowConvoDropdown] = createSignal(false);
 const [selectedPanel, setSelectedPanel] = createSignal("friends");
+const [friendElements, setFriendElements] = createSignal([]);
 
 function switchPanel(newpanel)
 {
     setSelectedPanel(newpanel);
+}
+
+function newConversation(friends, e) {
+    e.preventDefault();
+    invoke("new_conversation_f", { names: friends })
 }
     return (
         <div class = "w-full h-screen bg-black bg-opacity-5 flex flex-col justify-start items-center">
@@ -74,11 +81,19 @@ function switchPanel(newpanel)
                                     <div class="h-[65%]">
                                         <ul class="w-full h-full bg-black bg-opacity-10 overflow-y-scroll scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
                                             <For each={props.friends}>{(friend) => (
-                                                <li class="py-1 flex-1"><FriendConvoCheck name={friend}/></li>
+                                                <li class="py-1 flex-1">
+                                                    <FriendConvoCheck name={friend} setFriendElements={setFriendElements} friendElements={friendElements}/>
+                                                 </li>
                                             )}</For> 
                                         </ul>
                                     </div>
-                                    <button style={{"border-radius": "0 0 0.375rem 0.375rem" }}class=" w-full h-7 bg-black bg-opacity-0 font-sans text-stone-300 hover:bg-opacity-70 transition ease-in-out duration-200">
+                                    <button 
+                                        style={{"border-radius": "0 0 0.375rem 0.375rem" }}
+                                        class=" w-full h-7 bg-black bg-opacity-0 font-sans text-stone-300 hover:bg-opacity-70 transition ease-in-out duration-200"
+                                        onClick={(e) => {
+                                            newConversation(friendElements(), e)
+                                        }}
+                                        >
                                         Confirm
                                     </button>
                                 </Motion>      

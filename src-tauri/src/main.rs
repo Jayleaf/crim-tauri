@@ -11,7 +11,8 @@ use user::{
         add_friend::add_friend, 
         decline_friend_request::decline_friend_request,  
         remove_friend::remove_friend,
-        accept_friend_request::accept_friend_request
+        accept_friend_request::accept_friend_request,
+        new_conversation::new_conversation
     }, 
     get::get, 
     login::login, 
@@ -92,6 +93,12 @@ async fn send_message_f(message: &str, time: &str, target_convo_id: &str, app_ha
     Ok(0)
 }
 
+#[tauri::command(rename_all = "snake_case")]
+async fn new_conversation_f(names: Vec<&str>, app_handle: tauri::AppHandle) -> Result<(), ()>
+{
+    new_conversation(names, app_handle).await.map_err(|e| panic!("{e}"))
+}
+
 #[tokio::main]
 async fn main() {
     // set up the websocket
@@ -137,7 +144,16 @@ async fn main() {
             INSTANCE.set(app.handle().clone()).unwrap();
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![register_f, login_f, get_f, add_remove_friend, decline_friend_request_f, send_message_f, accept_friend_request_f, logout_f])
+        .invoke_handler(tauri::generate_handler![
+            register_f, 
+            login_f, 
+            get_f, 
+            add_remove_friend, 
+            decline_friend_request_f, 
+            send_message_f, 
+            accept_friend_request_f, 
+            new_conversation_f,
+            logout_f])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     
