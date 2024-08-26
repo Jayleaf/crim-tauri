@@ -3,7 +3,7 @@
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
     "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "distDir": "../build"
   },
   "package": {
     "productName": "crim",
@@ -15,6 +15,9 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "window": {
+        "show": true
       },
       "fs": {
           "readFile": true,
@@ -45,7 +48,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "crim.dev",
       "shortDescription": "CRIM: A Rust IM",
       "longDescription": "CRIM: A Rust IM",
       "icon": [

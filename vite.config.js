@@ -1,18 +1,19 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
+import publicPath from "vite-plugin-public-path";
 // import the undestructure plugin (properly this time! )
 import { undestructurePlugin } from "babel-plugin-solid-undestructure"
 
 
 // https://vitejs.dev/config/'
 export default defineConfig(async () => ({
-  plugins: [solidPlugin(
-   {
+  plugins: [
+  solidPlugin({
     babel: {
       plugins: [undestructurePlugin("vanilla-js")]
     } 
-   }
-  )],
+   }),
+  ],
       
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
@@ -30,15 +31,17 @@ export default defineConfig(async () => ({
   },
   build:
   {
-    // 4. tauri expects the output to be in `dist` and not `build`
-    outDir: "dist",
+    outDir: "build",
+    target: 'esnext',
     rollupOptions:
     {
+      external: /{{.*/,
       input:
       {
         index: "index.html",
         messenger: "src/messenger.html",
       }
+      
     }
   }
 }));

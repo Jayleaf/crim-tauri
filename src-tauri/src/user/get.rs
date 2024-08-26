@@ -1,9 +1,13 @@
 use super::generics::structs::ClientAccount;
 use std::path::PathBuf;
-use openssl::{rsa::Padding, symm};
 use reqwest;
 use tauri::{Manager, Wry};
 use tauri_plugin_store::{with_store, StoreCollection};
+use rsa::{self, pkcs8::DecodePrivateKey, Pkcs1v15Encrypt};
+use aes_gcm::{
+    aead::{Aead, AeadCore, KeyInit, OsRng, generic_array},
+    Aes256Gcm, Key // Or `Aes128Gcm`
+};
 
 /// This struct is also found in get.rs in the API.
 
@@ -28,15 +32,14 @@ pub async fn get(session_id: &str, app_handle: tauri::AppHandle) -> u16
         // now, we have to decrypt each message in each conversation with our private key.
         for conversation in result.conversations.iter_mut()
         {
-            let cipher: symm::Cipher = symm::Cipher::aes_256_cbc();
             let key = conversation.keys.iter().find(|k| k.owner == result.username).unwrap();
-            let private_key = openssl::rsa::Rsa::private_key_from_pem(std::fs::read(".pkey.key").unwrap().as_ref()).unwrap();
-            let mut decrypted_convo_key: Vec<u8> = vec![0; private_key.size() as usize];
-            private_key.private_decrypt(&key.key, &mut decrypted_convo_key, Padding::PKCS1).expect("Failed to decrypt convo key");
-            decrypted_convo_key.retain(|&x| x != 0_u8); 
+            let private_key = rsa::RsaPrivateKey::from_pkcs8_pem(&String::from_utf8(std::fs::read(".pkey.key").unwrap()).unwrap()).unwrap();
+            let mut decrypted_convo_key = private_key.decrypt(Pkcs1v15Encrypt, &key.key).expect("Failed to decrypt convo key");
+            decrypted_convo_key.retain(|&x| x != 0_u8);
+            let key = Key::<Aes256Gcm>::from_slice(&decrypted_convo_key); // conversation keys are also 32 bytes.
             for message in conversation.messages.iter_mut()
             {
-                let decrypted_message = symm::decrypt(cipher, &decrypted_convo_key, None, &message.data).unwrap();
+                let decrypted_message = Aes256Gcm::new(&key).decrypt(&generic_array::GenericArray::clone_from_slice(message.nonce.as_slice()), message.data.as_slice()).unwrap();
                 println!("{:#?}: {:#?}", String::from_utf8(decrypted_message.clone()).unwrap().as_str(), &decrypted_message);
                 message.data = decrypted_message;
             }

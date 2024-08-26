@@ -17,7 +17,7 @@ function App() {
   async function transport() {
     // go to messenger page
     console.log("transporting to messenger...")
-    window.eval("window.location.assign('messenger.html');");
+    window.eval("window.location.assign('src/messenger.html');");
   }
 
   async function login() {

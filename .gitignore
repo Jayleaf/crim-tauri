@@ -1,2 +1,7 @@
-node_modules
-dist
+/node_modules/*
+!node_modules/vite
+.devcontainer
+.github
+
+# I have to use a vite PR because their devs are incompetent. can't let npm install use the public version.
+build

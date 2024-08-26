@@ -31,6 +31,7 @@ pub struct Conversation
 pub struct EncryptedMessage
 {
     pub data: Vec<u8>,
+    pub nonce: Vec<u8>,
     pub sender: String,
     pub dest_convo_id: String,
     pub sender_sid: String,
